@@ -1,0 +1,38 @@
+
+# SUMMARY: THIẾT KẾ TEMPLATE DỰ ÁN ĐỘC LẬP (STANDALONE)
+*(Cập nhật: Kiến trúc Vite Middleware / Single Port)*
+
+### 1. Tổng quan & Quyết định Kiến trúc
+*   **Mô hình**: **Monorepo thu nhỏ chạy Single Process** (Vite Middleware / BFF Pattern).
+*   **Cách thức vận hành**: 
+    *   Chỉ dùng **1 cổng (Port)** duy nhất cho cả Frontend và Backend.
+    *   Khi chạy lệnh dev, Server (Express/Hono) sẽ khởi tạo và nhúng Vite ở chế độ middleware để xử lý giao diện và HMR.
+    *   Khi Production, Server sẽ serve các file tĩnh đã build của Frontend.
+*   **Tech Stack**:
+    *   **Frontend**: React + Vite + TanStack Router (giữ chuẩn giống STAX FE).
+    *   **Backend**: Node.js (Express hoặc Hono).
+    *   **Database**: PostgreSQL + Drizzle ORM.
+    *   **Contract/Validation**: Zod.
+
+### 2. Cấu trúc Thư mục Dự án
+```text
+stax-standalone-template/
+├── client/                      # 🌐 FRONTEND (React + Vite)
+│   └── src/                     # Routes, Components, Hooks...
+├── server/                      # 🛡️ BACKEND & BFF SERVER
+│   └── src/index.ts             # Khởi tạo server, nhúng Vite, kết nối DB
+└── shared/                      # 🤝 SHARED (Nguồn sự thật duy nhất)
+    └── src/
+        ├── db/schema.ts        # Định nghĩa bảng DB bằng Drizzle
+        └── contracts/          # Định nghĩa Zod Schema cho API
+```
+
+### 3. Chi tiết Thiết kế Kỹ thuật
+*   **Vận hành Server (Mấu chốt mới)**:
+    *   Các request có tiền tố `/api/*` sẽ do router của Backend xử lý.
+    *   Các request còn lại sẽ được đẩy qua Vite Middleware để render React (ở mode Dev).
+*   **Data & Schema (Drizzle ORM)**: Schema nằm ở `shared`. `server` import để kết nối DB. `client` import type để suy diễn kiểu dữ liệu.
+*   **API Contract (Zod)**: Định nghĩa tại `shared`. BE dùng để validate dữ liệu đầu vào, FE dùng để định nghĩa kiểu dữ liệu cho Form/Payload.
+*   **Quản lý Trạng thái (Frontend)**: *TanStack Query* (Server data) + *Zustand* (Global UI state) + *React Hook Form* (Form state).
+*   **Xử lý Lỗi**: Backend trả về cấu trúc JSON lỗi đồng nhất. Frontend tự động map lỗi vào form.
+*   **Chiến lược Kiểm thử**: Dùng Vitest cho toàn repo. MSW cho Frontend mock.
