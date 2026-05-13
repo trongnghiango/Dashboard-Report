@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Production Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: production
+    description: Production records
+  - name: analytics
+    description: Analytics and summaries
 paths:
   /healthz:
     get:
@@ -24,6 +27,217 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /production:
+    get:
+      operationId: listProduction
+      tags: [production]
+      summary: List production records
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+        - name: maySoi
+          in: query
+          schema: { type: string }
+        - name: donHang
+          in: query
+          schema: { type: string }
+        - name: lenhXK
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of production records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductionListResponse"
+    post:
+      operationId: createProduction
+      tags: [production]
+      summary: Create production record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Production"
+
+  /production/{id}:
+    get:
+      operationId: getProduction
+      tags: [production]
+      summary: Get production record by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Production record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Production"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProduction
+      tags: [production]
+      summary: Update production record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductionUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Production"
+    delete:
+      operationId: deleteProduction
+      tags: [production]
+      summary: Delete production record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /analytics/summary:
+    get:
+      operationId: getSummary
+      tags: [analytics]
+      summary: Get dashboard KPI summary
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /analytics/output-trend:
+    get:
+      operationId: getOutputTrend
+      tags: [analytics]
+      summary: Daily output trend over time
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Output trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutputTrendPoint"
+
+  /analytics/waste-breakdown:
+    get:
+      operationId: getWasteBreakdown
+      tags: [analytics]
+      summary: Waste breakdown by type
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Waste breakdown
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WasteBreakdown"
+
+  /analytics/order-completion:
+    get:
+      operationId: getOrderCompletion
+      tags: [analytics]
+      summary: Order completion rates
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Order completion data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderCompletion"
+
+  /analytics/shift-performance:
+    get:
+      operationId: getShiftPerformance
+      tags: [analytics]
+      summary: Output performance by shift (Ca 1, Ca 2, Ca 3)
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Shift performance data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShiftPerformance"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +248,403 @@ components:
       required:
         - status
 
+    Production:
+      type: object
+      required:
+        - id
+        - ngayNhap
+        - ngaySanXuat
+        - maSoi
+        - tenSoi
+        - donHang
+      properties:
+        id:
+          type: integer
+        stt:
+          type: ["integer", "null"]
+        ngayNhap:
+          type: string
+          format: date
+        ngaySanXuat:
+          type: string
+          format: date
+        lenhXK:
+          type: ["string", "null"]
+        ngayBanHanhLXK:
+          type: ["string", "null"]
+        maSoi:
+          type: string
+        tenSoi:
+          type: string
+        tenSoiMoi:
+          type: ["string", "null"]
+        donHang:
+          type: string
+        tyLeNhua:
+          type: ["number", "null"]
+        ngaySanXuatGanNhat:
+          type: ["string", "null"]
+        mayTSCa1:
+          type: ["string", "null"]
+        thoiGianTSCa1:
+          type: ["number", "null"]
+        sanLuongCa1:
+          type: ["number", "null"]
+        mayTSCa2:
+          type: ["string", "null"]
+        thoiGianTSCa2:
+          type: ["number", "null"]
+        sanLuongCa2:
+          type: ["number", "null"]
+        mayTSCa3:
+          type: ["string", "null"]
+        thoiGianTSCa3:
+          type: ["number", "null"]
+        sanLuongCa3:
+          type: ["number", "null"]
+        tongSLNgay:
+          type: ["number", "null"]
+        slDonHangDaSX:
+          type: ["number", "null"]
+        slLuyKeTuan:
+          type: ["number", "null"]
+        luyKeTHang:
+          type: ["number", "null"]
+        canSXTiep:
+          type: ["number", "null"]
+        dvt:
+          type: ["string", "null"]
+        phekeoMay:
+          type: ["number", "null"]
+        pheChayMay:
+          type: ["number", "null"]
+        pheChuyenDoi:
+          type: ["number", "null"]
+        pheSuCo:
+          type: ["number", "null"]
+        pheDungMay:
+          type: ["number", "null"]
+        pheXuLy:
+          type: ["number", "null"]
+        tongPheNgay:
+          type: ["number", "null"]
+        pheDonHang:
+          type: ["number", "null"]
+        pheLuyKeTuan:
+          type: ["number", "null"]
+        pheLuyKeTHang:
+          type: ["number", "null"]
+        tyLeHoanThanh:
+          type: ["number", "null"]
+        ghiChu:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ProductionInput:
+      type: object
+      required:
+        - ngayNhap
+        - ngaySanXuat
+        - maSoi
+        - tenSoi
+        - donHang
+      properties:
+        stt:
+          type: ["integer", "null"]
+        ngayNhap:
+          type: string
+          format: date
+        ngaySanXuat:
+          type: string
+          format: date
+        lenhXK:
+          type: ["string", "null"]
+        ngayBanHanhLXK:
+          type: ["string", "null"]
+        maSoi:
+          type: string
+        tenSoi:
+          type: string
+        tenSoiMoi:
+          type: ["string", "null"]
+        donHang:
+          type: string
+        tyLeNhua:
+          type: ["number", "null"]
+        ngaySanXuatGanNhat:
+          type: ["string", "null"]
+        mayTSCa1:
+          type: ["string", "null"]
+        thoiGianTSCa1:
+          type: ["number", "null"]
+        sanLuongCa1:
+          type: ["number", "null"]
+        mayTSCa2:
+          type: ["string", "null"]
+        thoiGianTSCa2:
+          type: ["number", "null"]
+        sanLuongCa2:
+          type: ["number", "null"]
+        mayTSCa3:
+          type: ["string", "null"]
+        thoiGianTSCa3:
+          type: ["number", "null"]
+        sanLuongCa3:
+          type: ["number", "null"]
+        tongSLNgay:
+          type: ["number", "null"]
+        slDonHangDaSX:
+          type: ["number", "null"]
+        slLuyKeTuan:
+          type: ["number", "null"]
+        luyKeTHang:
+          type: ["number", "null"]
+        canSXTiep:
+          type: ["number", "null"]
+        dvt:
+          type: ["string", "null"]
+        phekeoMay:
+          type: ["number", "null"]
+        pheChayMay:
+          type: ["number", "null"]
+        pheChuyenDoi:
+          type: ["number", "null"]
+        pheSuCo:
+          type: ["number", "null"]
+        pheDungMay:
+          type: ["number", "null"]
+        pheXuLy:
+          type: ["number", "null"]
+        tongPheNgay:
+          type: ["number", "null"]
+        pheDonHang:
+          type: ["number", "null"]
+        pheLuyKeTuan:
+          type: ["number", "null"]
+        pheLuyKeTHang:
+          type: ["number", "null"]
+        tyLeHoanThanh:
+          type: ["number", "null"]
+        ghiChu:
+          type: ["string", "null"]
+
+    ProductionUpdate:
+      type: object
+      properties:
+        stt:
+          type: ["integer", "null"]
+        ngayNhap:
+          type: ["string", "null"]
+        ngaySanXuat:
+          type: ["string", "null"]
+        lenhXK:
+          type: ["string", "null"]
+        ngayBanHanhLXK:
+          type: ["string", "null"]
+        maSoi:
+          type: ["string", "null"]
+        tenSoi:
+          type: ["string", "null"]
+        tenSoiMoi:
+          type: ["string", "null"]
+        donHang:
+          type: ["string", "null"]
+        tyLeNhua:
+          type: ["number", "null"]
+        ngaySanXuatGanNhat:
+          type: ["string", "null"]
+        mayTSCa1:
+          type: ["string", "null"]
+        thoiGianTSCa1:
+          type: ["number", "null"]
+        sanLuongCa1:
+          type: ["number", "null"]
+        mayTSCa2:
+          type: ["string", "null"]
+        thoiGianTSCa2:
+          type: ["number", "null"]
+        sanLuongCa2:
+          type: ["number", "null"]
+        mayTSCa3:
+          type: ["string", "null"]
+        thoiGianTSCa3:
+          type: ["number", "null"]
+        sanLuongCa3:
+          type: ["number", "null"]
+        tongSLNgay:
+          type: ["number", "null"]
+        slDonHangDaSX:
+          type: ["number", "null"]
+        slLuyKeTuan:
+          type: ["number", "null"]
+        luyKeTHang:
+          type: ["number", "null"]
+        canSXTiep:
+          type: ["number", "null"]
+        dvt:
+          type: ["string", "null"]
+        phekeoMay:
+          type: ["number", "null"]
+        pheChayMay:
+          type: ["number", "null"]
+        pheChuyenDoi:
+          type: ["number", "null"]
+        pheSuCo:
+          type: ["number", "null"]
+        pheDungMay:
+          type: ["number", "null"]
+        pheXuLy:
+          type: ["number", "null"]
+        tongPheNgay:
+          type: ["number", "null"]
+        pheDonHang:
+          type: ["number", "null"]
+        pheLuyKeTuan:
+          type: ["number", "null"]
+        pheLuyKeTHang:
+          type: ["number", "null"]
+        tyLeHoanThanh:
+          type: ["number", "null"]
+        ghiChu:
+          type: ["string", "null"]
+
+    ProductionListResponse:
+      type: object
+      required:
+        - data
+        - total
+        - page
+        - limit
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Production"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    DashboardSummary:
+      type: object
+      required:
+        - tongSLNgayHienTai
+        - tongSLTuan
+        - tongSLThang
+        - tongPheNgay
+        - tongPheTuan
+        - tongPheThang
+        - soLenhDangSX
+        - tyLeHoanThanhTB
+      properties:
+        tongSLNgayHienTai:
+          type: number
+        tongSLTuan:
+          type: number
+        tongSLThang:
+          type: number
+        tongPheNgay:
+          type: number
+        tongPheTuan:
+          type: number
+        tongPheThang:
+          type: number
+        soLenhDangSX:
+          type: integer
+        tyLeHoanThanhTB:
+          type: number
+        soRecordHomNay:
+          type: integer
+        soRecordTuan:
+          type: integer
+
+    OutputTrendPoint:
+      type: object
+      required:
+        - date
+        - tongSL
+        - tongPhe
+      properties:
+        date:
+          type: string
+        tongSL:
+          type: number
+        tongPhe:
+          type: number
+        slCa1:
+          type: ["number", "null"]
+        slCa2:
+          type: ["number", "null"]
+        slCa3:
+          type: ["number", "null"]
+
+    WasteBreakdown:
+      type: object
+      required:
+        - phekeoMay
+        - pheChayMay
+        - pheChuyenDoi
+        - pheSuCo
+        - pheDungMay
+        - pheXuLy
+      properties:
+        phekeoMay:
+          type: number
+        pheChayMay:
+          type: number
+        pheChuyenDoi:
+          type: number
+        pheSuCo:
+          type: number
+        pheDungMay:
+          type: number
+        pheXuLy:
+          type: number
+
+    OrderCompletion:
+      type: object
+      required:
+        - donHang
+        - maSoi
+        - tenSoi
+        - slDonHangDaSX
+        - canSXTiep
+        - tyLeHoanThanh
+      properties:
+        donHang:
+          type: string
+        maSoi:
+          type: string
+        tenSoi:
+          type: string
+        slDonHangDaSX:
+          type: ["number", "null"]
+        canSXTiep:
+          type: ["number", "null"]
+        tyLeHoanThanh:
+          type: ["number", "null"]
+
+    ShiftPerformance:
+      type: object
+      required:
+        - ca1
+        - ca2
+        - ca3
+      properties:
+        ca1:
+          type: number
+        ca2:
+          type: number
+        ca3:
+          type: number
+        ca1Pct:
+          type: number
+        ca2Pct:
+          type: number
+        ca3Pct:
+          type: number
