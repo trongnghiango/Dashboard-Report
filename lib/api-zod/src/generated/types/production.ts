@@ -10,8 +10,8 @@ export interface Production {
   id: number;
   /** @nullable */
   stt?: number | null;
-  ngayNhap: Date;
-  ngaySanXuat: Date;
+  ngayNhap: string;
+  ngaySanXuat: string;
   /** @nullable */
   lenhXK?: string | null;
   /** @nullable */

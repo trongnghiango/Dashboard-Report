@@ -5,14 +5,11 @@
  * Production Dashboard API
  * OpenAPI spec version: 0.1.0
  */
+import type { Order } from "./order";
 
-export type ListProductionParams = {
+export type ListOrders200 = {
+  data?: Order[];
+  total?: number;
   page?: number;
   limit?: number;
-  search?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  maySoi?: string;
-  donHang?: string;
-  lenhXK?: string;
 };

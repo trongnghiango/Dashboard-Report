@@ -6,11 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GetSummaryParams = {
-  dateFrom?: string;
-  dateTo?: string;
-  /**
-   * Filter by machine name
-   */
-  may?: string;
+export type ImportProduction201 = {
+  count?: number;
+  message?: string;
 };

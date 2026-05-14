@@ -7,6 +7,10 @@
  */
 
 export type GetOrderCompletionParams = {
-  dateFrom?: Date;
-  dateTo?: Date;
+  dateFrom?: string;
+  dateTo?: string;
+  /**
+   * Filter by machine name
+   */
+  may?: string;
 };

@@ -24,8 +24,9 @@ export const listProductionQueryLimitDefault = 50;
 export const ListProductionQueryParams = zod.object({
   page: zod.coerce.number().default(listProductionQueryPageDefault),
   limit: zod.coerce.number().default(listProductionQueryLimitDefault),
-  dateFrom: zod.date().optional(),
-  dateTo: zod.date().optional(),
+  search: zod.coerce.string().optional(),
+  dateFrom: zod.coerce.string().optional(),
+  dateTo: zod.coerce.string().optional(),
   maySoi: zod.coerce.string().optional(),
   donHang: zod.coerce.string().optional(),
   lenhXK: zod.coerce.string().optional(),
@@ -36,8 +37,8 @@ export const ListProductionResponse = zod.object({
     zod.object({
       id: zod.number(),
       stt: zod.number().nullish(),
-      ngayNhap: zod.coerce.date(),
-      ngaySanXuat: zod.coerce.date(),
+      ngayNhap: zod.string(),
+      ngaySanXuat: zod.string(),
       lenhXK: zod.string().nullish(),
       ngayBanHanhLXK: zod.string().nullish(),
       maSoi: zod.string(),
@@ -87,8 +88,8 @@ export const ListProductionResponse = zod.object({
  */
 export const CreateProductionBody = zod.object({
   stt: zod.number().nullish(),
-  ngayNhap: zod.coerce.date(),
-  ngaySanXuat: zod.coerce.date(),
+  ngayNhap: zod.string(),
+  ngaySanXuat: zod.string(),
   lenhXK: zod.string().nullish(),
   ngayBanHanhLXK: zod.string().nullish(),
   maSoi: zod.string(),
@@ -136,8 +137,8 @@ export const GetProductionParams = zod.object({
 export const GetProductionResponse = zod.object({
   id: zod.number(),
   stt: zod.number().nullish(),
-  ngayNhap: zod.coerce.date(),
-  ngaySanXuat: zod.coerce.date(),
+  ngayNhap: zod.string(),
+  ngaySanXuat: zod.string(),
   lenhXK: zod.string().nullish(),
   ngayBanHanhLXK: zod.string().nullish(),
   maSoi: zod.string(),
@@ -228,8 +229,8 @@ export const UpdateProductionBody = zod.object({
 export const UpdateProductionResponse = zod.object({
   id: zod.number(),
   stt: zod.number().nullish(),
-  ngayNhap: zod.coerce.date(),
-  ngaySanXuat: zod.coerce.date(),
+  ngayNhap: zod.string(),
+  ngaySanXuat: zod.string(),
   lenhXK: zod.string().nullish(),
   ngayBanHanhLXK: zod.string().nullish(),
   maSoi: zod.string(),
@@ -277,11 +278,110 @@ export const DeleteProductionParams = zod.object({
 });
 
 /**
+ * @summary List orders
+ */
+export const listOrdersQueryPageDefault = 1;
+export const listOrdersQueryLimitDefault = 50;
+
+export const ListOrdersQueryParams = zod.object({
+  page: zod.coerce.number().default(listOrdersQueryPageDefault),
+  limit: zod.coerce.number().default(listOrdersQueryLimitDefault),
+  search: zod.coerce.string().optional(),
+});
+
+export const ListOrdersResponse = zod.object({
+  data: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        donHang: zod.string().nullish(),
+        maSoi: zod.string().nullish(),
+        tenSoi: zod.string().nullish(),
+        slDonHang: zod.number().nullish(),
+        tyLeNhua: zod.number().nullish(),
+        dvt: zod.string().nullish(),
+        ngayBanHanhLXK: zod.string().nullish(),
+        createdAt: zod.string().optional(),
+        updatedAt: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  total: zod.number().optional(),
+  page: zod.number().optional(),
+  limit: zod.number().optional(),
+});
+
+/**
+ * @summary Import production records from Excel/CSV
+ */
+export const ImportProductionBody = zod.object({
+  orders: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        donHang: zod.string().nullish(),
+        maSoi: zod.string().nullish(),
+        tenSoi: zod.string().nullish(),
+        slDonHang: zod.number().nullish(),
+        tyLeNhua: zod.number().nullish(),
+        dvt: zod.string().nullish(),
+        ngayBanHanhLXK: zod.string().nullish(),
+      }),
+    )
+    .optional(),
+  production: zod
+    .array(
+      zod.object({
+        stt: zod.number().nullish(),
+        ngayNhap: zod.string(),
+        ngaySanXuat: zod.string(),
+        lenhXK: zod.string().nullish(),
+        ngayBanHanhLXK: zod.string().nullish(),
+        maSoi: zod.string(),
+        tenSoi: zod.string(),
+        tenSoiMoi: zod.string().nullish(),
+        donHang: zod.string(),
+        tyLeNhua: zod.number().nullish(),
+        ngaySanXuatGanNhat: zod.string().nullish(),
+        mayTSCa1: zod.string().nullish(),
+        thoiGianTSCa1: zod.number().nullish(),
+        sanLuongCa1: zod.number().nullish(),
+        mayTSCa2: zod.string().nullish(),
+        thoiGianTSCa2: zod.number().nullish(),
+        sanLuongCa2: zod.number().nullish(),
+        mayTSCa3: zod.string().nullish(),
+        thoiGianTSCa3: zod.number().nullish(),
+        sanLuongCa3: zod.number().nullish(),
+        tongSLNgay: zod.number().nullish(),
+        slDonHangDaSX: zod.number().nullish(),
+        slLuyKeTuan: zod.number().nullish(),
+        luyKeTHang: zod.number().nullish(),
+        canSXTiep: zod.number().nullish(),
+        dvt: zod.string().nullish(),
+        phekeoMay: zod.number().nullish(),
+        pheChayMay: zod.number().nullish(),
+        pheChuyenDoi: zod.number().nullish(),
+        pheSuCo: zod.number().nullish(),
+        pheDungMay: zod.number().nullish(),
+        pheXuLy: zod.number().nullish(),
+        tongPheNgay: zod.number().nullish(),
+        pheDonHang: zod.number().nullish(),
+        pheLuyKeTuan: zod.number().nullish(),
+        pheLuyKeTHang: zod.number().nullish(),
+        tyLeHoanThanh: zod.number().nullish(),
+        ghiChu: zod.string().nullish(),
+      }),
+    )
+    .optional(),
+});
+
+/**
  * @summary Get dashboard KPI summary
  */
 export const GetSummaryQueryParams = zod.object({
-  dateFrom: zod.date().optional(),
-  dateTo: zod.date().optional(),
+  dateFrom: zod.coerce.string().optional(),
+  dateTo: zod.coerce.string().optional(),
+  may: zod.coerce.string().optional().describe("Filter by machine name"),
 });
 
 export const GetSummaryResponse = zod.object({
@@ -301,8 +401,9 @@ export const GetSummaryResponse = zod.object({
  * @summary Daily output trend over time
  */
 export const GetOutputTrendQueryParams = zod.object({
-  dateFrom: zod.date().optional(),
-  dateTo: zod.date().optional(),
+  dateFrom: zod.coerce.string().optional(),
+  dateTo: zod.coerce.string().optional(),
+  may: zod.coerce.string().optional().describe("Filter by machine name"),
 });
 
 export const GetOutputTrendResponseItem = zod.object({
@@ -319,8 +420,9 @@ export const GetOutputTrendResponse = zod.array(GetOutputTrendResponseItem);
  * @summary Waste breakdown by type
  */
 export const GetWasteBreakdownQueryParams = zod.object({
-  dateFrom: zod.date().optional(),
-  dateTo: zod.date().optional(),
+  dateFrom: zod.coerce.string().optional(),
+  dateTo: zod.coerce.string().optional(),
+  may: zod.coerce.string().optional().describe("Filter by machine name"),
 });
 
 export const GetWasteBreakdownResponse = zod.object({
@@ -336,8 +438,9 @@ export const GetWasteBreakdownResponse = zod.object({
  * @summary Order completion rates
  */
 export const GetOrderCompletionQueryParams = zod.object({
-  dateFrom: zod.date().optional(),
-  dateTo: zod.date().optional(),
+  dateFrom: zod.coerce.string().optional(),
+  dateTo: zod.coerce.string().optional(),
+  may: zod.coerce.string().optional().describe("Filter by machine name"),
 });
 
 export const GetOrderCompletionResponseItem = zod.object({
@@ -356,8 +459,9 @@ export const GetOrderCompletionResponse = zod.array(
  * @summary Output performance by shift (Ca 1, Ca 2, Ca 3)
  */
 export const GetShiftPerformanceQueryParams = zod.object({
-  dateFrom: zod.date().optional(),
-  dateTo: zod.date().optional(),
+  dateFrom: zod.coerce.string().optional(),
+  dateTo: zod.coerce.string().optional(),
+  may: zod.coerce.string().optional().describe("Filter by machine name"),
 });
 
 export const GetShiftPerformanceResponse = zod.object({
@@ -368,3 +472,47 @@ export const GetShiftPerformanceResponse = zod.object({
   ca2Pct: zod.number().optional(),
   ca3Pct: zod.number().optional(),
 });
+
+/**
+ * @summary Get paginated parent production orders with aggregated progress
+ */
+export const getProgressParentsQueryPageDefault = 1;
+export const getProgressParentsQueryLimitDefault = 50;
+
+export const GetProgressParentsQueryParams = zod.object({
+  page: zod.coerce.number().default(getProgressParentsQueryPageDefault),
+  limit: zod.coerce.number().default(getProgressParentsQueryLimitDefault),
+  search: zod.coerce.string().optional(),
+});
+
+export const GetProgressParentsResponse = zod.object({
+  data: zod.array(
+    zod.object({
+      lenhXK: zod.string(),
+      tongSlDonHang: zod.number(),
+      tongDaSanXuat: zod.number(),
+      tienDo: zod.number(),
+      status: zod.enum(["IN_PROGRESS", "COMPLETED"]),
+    }),
+  ),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
+
+/**
+ * @summary Get detailed child fiber items for a specific parent order
+ */
+export const GetProgressItemsQueryParams = zod.object({
+  lenhXK: zod.coerce.string(),
+});
+
+export const GetProgressItemsResponseItem = zod.object({
+  orderId: zod.string(),
+  maSoi: zod.string(),
+  tenSoi: zod.string(),
+  slDonHang: zod.number(),
+  daSanXuat: zod.number(),
+  tienDo: zod.number(),
+});
+export const GetProgressItemsResponse = zod.array(GetProgressItemsResponseItem);

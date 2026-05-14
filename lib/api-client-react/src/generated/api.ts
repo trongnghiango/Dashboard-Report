@@ -20,10 +20,16 @@ import type {
   DashboardSummary,
   GetOrderCompletionParams,
   GetOutputTrendParams,
+  GetProgressItemsParams,
+  GetProgressParentsParams,
   GetShiftPerformanceParams,
   GetSummaryParams,
   GetWasteBreakdownParams,
   HealthStatus,
+  ImportProduction201,
+  ImportProductionBody,
+  ListOrders200,
+  ListOrdersParams,
   ListProductionParams,
   OrderCompletion,
   OutputTrendPoint,
@@ -31,6 +37,8 @@ import type {
   ProductionInput,
   ProductionListResponse,
   ProductionUpdate,
+  ProgressChildItem,
+  ProgressParentsResponse,
   ShiftPerformance,
   WasteBreakdown,
 } from "./api.schemas";
@@ -559,6 +567,186 @@ export const useDeleteProduction = <
 };
 
 /**
+ * @summary List orders
+ */
+export const getListOrdersUrl = (params?: ListOrdersParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/orders?${stringifiedParams}`
+    : `/api/orders`;
+};
+
+export const listOrders = async (
+  params?: ListOrdersParams,
+  options?: RequestInit,
+): Promise<ListOrders200> => {
+  return customFetch<ListOrders200>(getListOrdersUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListOrdersQueryKey = (params?: ListOrdersParams) => {
+  return [`/api/orders`, ...(params ? [params] : [])] as const;
+};
+
+export const getListOrdersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listOrders>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListOrdersParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listOrders>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListOrdersQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrders>>> = ({
+    signal,
+  }) => listOrders(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listOrders>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListOrdersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listOrders>>
+>;
+export type ListOrdersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List orders
+ */
+
+export function useListOrders<
+  TData = Awaited<ReturnType<typeof listOrders>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListOrdersParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listOrders>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListOrdersQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Import production records from Excel/CSV
+ */
+export const getImportProductionUrl = () => {
+  return `/api/production/import`;
+};
+
+export const importProduction = async (
+  importProductionBody: ImportProductionBody,
+  options?: RequestInit,
+): Promise<ImportProduction201> => {
+  return customFetch<ImportProduction201>(getImportProductionUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(importProductionBody),
+  });
+};
+
+export const getImportProductionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof importProduction>>,
+    TError,
+    { data: BodyType<ImportProductionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof importProduction>>,
+  TError,
+  { data: BodyType<ImportProductionBody> },
+  TContext
+> => {
+  const mutationKey = ["importProduction"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof importProduction>>,
+    { data: BodyType<ImportProductionBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return importProduction(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ImportProductionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof importProduction>>
+>;
+export type ImportProductionMutationBody = BodyType<ImportProductionBody>;
+export type ImportProductionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Import production records from Excel/CSV
+ */
+export const useImportProduction = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof importProduction>>,
+    TError,
+    { data: BodyType<ImportProductionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof importProduction>>,
+  TError,
+  { data: BodyType<ImportProductionBody> },
+  TContext
+> => {
+  return useMutation(getImportProductionMutationOptions(options));
+};
+
+/**
  * @summary Get dashboard KPI summary
  */
 export const getGetSummaryUrl = (params?: GetSummaryParams) => {
@@ -1041,6 +1229,209 @@ export function useGetShiftPerformance<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetShiftPerformanceQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get paginated parent production orders with aggregated progress
+ */
+export const getGetProgressParentsUrl = (params?: GetProgressParentsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/analytics/progress-parents?${stringifiedParams}`
+    : `/api/analytics/progress-parents`;
+};
+
+export const getProgressParents = async (
+  params?: GetProgressParentsParams,
+  options?: RequestInit,
+): Promise<ProgressParentsResponse> => {
+  return customFetch<ProgressParentsResponse>(
+    getGetProgressParentsUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetProgressParentsQueryKey = (
+  params?: GetProgressParentsParams,
+) => {
+  return [
+    `/api/analytics/progress-parents`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetProgressParentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProgressParents>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetProgressParentsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProgressParents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetProgressParentsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getProgressParents>>
+  > = ({ signal }) => getProgressParents(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProgressParents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetProgressParentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProgressParents>>
+>;
+export type GetProgressParentsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get paginated parent production orders with aggregated progress
+ */
+
+export function useGetProgressParents<
+  TData = Awaited<ReturnType<typeof getProgressParents>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetProgressParentsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProgressParents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetProgressParentsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get detailed child fiber items for a specific parent order
+ */
+export const getGetProgressItemsUrl = (params: GetProgressItemsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/analytics/progress-items?${stringifiedParams}`
+    : `/api/analytics/progress-items`;
+};
+
+export const getProgressItems = async (
+  params: GetProgressItemsParams,
+  options?: RequestInit,
+): Promise<ProgressChildItem[]> => {
+  return customFetch<ProgressChildItem[]>(getGetProgressItemsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetProgressItemsQueryKey = (
+  params?: GetProgressItemsParams,
+) => {
+  return [
+    `/api/analytics/progress-items`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetProgressItemsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProgressItems>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetProgressItemsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProgressItems>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetProgressItemsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getProgressItems>>
+  > = ({ signal }) => getProgressItems(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProgressItems>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetProgressItemsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProgressItems>>
+>;
+export type GetProgressItemsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get detailed child fiber items for a specific parent order
+ */
+
+export function useGetProgressItems<
+  TData = Awaited<ReturnType<typeof getProgressItems>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetProgressItemsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProgressItems>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetProgressItemsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

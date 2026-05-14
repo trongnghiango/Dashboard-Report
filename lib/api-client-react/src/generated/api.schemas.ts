@@ -86,6 +86,44 @@ export interface Production {
   updatedAt?: string;
 }
 
+export interface Order {
+  id: string;
+  /** @nullable */
+  donHang?: string | null;
+  /** @nullable */
+  maSoi?: string | null;
+  /** @nullable */
+  tenSoi?: string | null;
+  /** @nullable */
+  slDonHang?: number | null;
+  /** @nullable */
+  tyLeNhua?: number | null;
+  /** @nullable */
+  dvt?: string | null;
+  /** @nullable */
+  ngayBanHanhLXK?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface OrderInput {
+  id: string;
+  /** @nullable */
+  donHang?: string | null;
+  /** @nullable */
+  maSoi?: string | null;
+  /** @nullable */
+  tenSoi?: string | null;
+  /** @nullable */
+  slDonHang?: number | null;
+  /** @nullable */
+  tyLeNhua?: number | null;
+  /** @nullable */
+  dvt?: string | null;
+  /** @nullable */
+  ngayBanHanhLXK?: string | null;
+}
+
 export interface ProductionInput {
   /** @nullable */
   stt?: number | null;
@@ -301,9 +339,42 @@ export interface ShiftPerformance {
   ca3Pct?: number;
 }
 
+export type ProgressParentSummaryStatus =
+  (typeof ProgressParentSummaryStatus)[keyof typeof ProgressParentSummaryStatus];
+
+export const ProgressParentSummaryStatus = {
+  IN_PROGRESS: "IN_PROGRESS",
+  COMPLETED: "COMPLETED",
+} as const;
+
+export interface ProgressParentSummary {
+  lenhXK: string;
+  tongSlDonHang: number;
+  tongDaSanXuat: number;
+  tienDo: number;
+  status: ProgressParentSummaryStatus;
+}
+
+export interface ProgressParentsResponse {
+  data: ProgressParentSummary[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ProgressChildItem {
+  orderId: string;
+  maSoi: string;
+  tenSoi: string;
+  slDonHang: number;
+  daSanXuat: number;
+  tienDo: number;
+}
+
 export type ListProductionParams = {
   page?: number;
   limit?: number;
+  search?: string;
   dateFrom?: string;
   dateTo?: string;
   maySoi?: string;
@@ -311,27 +382,80 @@ export type ListProductionParams = {
   lenhXK?: string;
 };
 
+export type ListOrdersParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+};
+
+export type ListOrders200 = {
+  data?: Order[];
+  total?: number;
+  page?: number;
+  limit?: number;
+};
+
+export type ImportProductionBody = {
+  orders?: OrderInput[];
+  production?: ProductionInput[];
+};
+
+export type ImportProduction201 = {
+  count?: number;
+  message?: string;
+};
+
 export type GetSummaryParams = {
   dateFrom?: string;
   dateTo?: string;
+  /**
+   * Filter by machine name
+   */
+  may?: string;
 };
 
 export type GetOutputTrendParams = {
   dateFrom?: string;
   dateTo?: string;
+  /**
+   * Filter by machine name
+   */
+  may?: string;
 };
 
 export type GetWasteBreakdownParams = {
   dateFrom?: string;
   dateTo?: string;
+  /**
+   * Filter by machine name
+   */
+  may?: string;
 };
 
 export type GetOrderCompletionParams = {
   dateFrom?: string;
   dateTo?: string;
+  /**
+   * Filter by machine name
+   */
+  may?: string;
 };
 
 export type GetShiftPerformanceParams = {
   dateFrom?: string;
   dateTo?: string;
+  /**
+   * Filter by machine name
+   */
+  may?: string;
+};
+
+export type GetProgressParentsParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+};
+
+export type GetProgressItemsParams = {
+  lenhXK: string;
 };

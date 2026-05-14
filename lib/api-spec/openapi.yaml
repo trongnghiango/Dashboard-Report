@@ -40,12 +40,15 @@ paths:
         - name: limit
           in: query
           schema: { type: integer, default: 50 }
+        - name: search
+          in: query
+          schema: { type: string }
         - name: dateFrom
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
         - name: dateTo
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
         - name: maySoi
           in: query
           schema: { type: string }
@@ -134,6 +137,73 @@ paths:
         "204":
           description: Deleted
 
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List orders
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Order"
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+
+  /production/import:
+    post:
+      operationId: importProduction
+      tags: [production]
+      summary: Import production records from Excel/CSV
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orders:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/OrderInput"
+                production:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ProductionInput"
+      responses:
+        "201":
+          description: Imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  message:
+                    type: string
+
   /analytics/summary:
     get:
       operationId: getSummary
@@ -142,10 +212,14 @@ paths:
       parameters:
         - name: dateFrom
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
         - name: dateTo
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
+        - name: may
+          in: query
+          schema: { type: string }
+          description: Filter by machine name
       responses:
         "200":
           description: Dashboard summary
@@ -162,10 +236,14 @@ paths:
       parameters:
         - name: dateFrom
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
         - name: dateTo
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
+        - name: may
+          in: query
+          schema: { type: string }
+          description: Filter by machine name
       responses:
         "200":
           description: Output trend data
@@ -184,10 +262,14 @@ paths:
       parameters:
         - name: dateFrom
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
         - name: dateTo
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
+        - name: may
+          in: query
+          schema: { type: string }
+          description: Filter by machine name
       responses:
         "200":
           description: Waste breakdown
@@ -204,10 +286,14 @@ paths:
       parameters:
         - name: dateFrom
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
         - name: dateTo
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
+        - name: may
+          in: query
+          schema: { type: string }
+          description: Filter by machine name
       responses:
         "200":
           description: Order completion data
@@ -226,10 +312,14 @@ paths:
       parameters:
         - name: dateFrom
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
         - name: dateTo
           in: query
-          schema: { type: string, format: date }
+          schema: { type: string }
+        - name: may
+          in: query
+          schema: { type: string }
+          description: Filter by machine name
       responses:
         "200":
           description: Shift performance data
@@ -237,6 +327,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ShiftPerformance"
+
+  /analytics/progress-parents:
+    get:
+      operationId: getProgressParents
+      tags: [analytics]
+      summary: Get paginated parent production orders with aggregated progress
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Paginated parent progress list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressParentsResponse"
+
+  /analytics/progress-items:
+    get:
+      operationId: getProgressItems
+      tags: [analytics]
+      summary: Get detailed child fiber items for a specific parent order
+      parameters:
+        - name: lenhXK
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of child progress items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgressChildItem"
 
 components:
   schemas:
@@ -264,10 +397,8 @@ components:
           type: ["integer", "null"]
         ngayNhap:
           type: string
-          format: date
         ngaySanXuat:
           type: string
-          format: date
         lenhXK:
           type: ["string", "null"]
         ngayBanHanhLXK:
@@ -343,6 +474,54 @@ components:
         updatedAt:
           type: string
 
+    Order:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        donHang:
+          type: ["string", "null"]
+        maSoi:
+          type: ["string", "null"]
+        tenSoi:
+          type: ["string", "null"]
+        slDonHang:
+          type: ["number", "null"]
+        tyLeNhua:
+          type: ["number", "null"]
+        dvt:
+          type: ["string", "null"]
+        ngayBanHanhLXK:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    OrderInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        donHang:
+          type: ["string", "null"]
+        maSoi:
+          type: ["string", "null"]
+        tenSoi:
+          type: ["string", "null"]
+        slDonHang:
+          type: ["number", "null"]
+        tyLeNhua:
+          type: ["number", "null"]
+        dvt:
+          type: ["string", "null"]
+        ngayBanHanhLXK:
+          type: ["string", "null"]
+
     ProductionInput:
       type: object
       required:
@@ -356,10 +535,8 @@ components:
           type: ["integer", "null"]
         ngayNhap:
           type: string
-          format: date
         ngaySanXuat:
           type: string
-          format: date
         lenhXK:
           type: ["string", "null"]
         ngayBanHanhLXK:
@@ -647,4 +824,67 @@ components:
         ca2Pct:
           type: number
         ca3Pct:
+          type: number
+
+    ProgressParentSummary:
+      type: object
+      required:
+        - lenhXK
+        - tongSlDonHang
+        - tongDaSanXuat
+        - tienDo
+        - status
+      properties:
+        lenhXK:
+          type: string
+        tongSlDonHang:
+          type: number
+        tongDaSanXuat:
+          type: number
+        tienDo:
+          type: number
+        status:
+          type: string
+          enum: [IN_PROGRESS, COMPLETED]
+
+    ProgressParentsResponse:
+      type: object
+      required:
+        - data
+        - total
+        - page
+        - limit
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgressParentSummary"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    ProgressChildItem:
+      type: object
+      required:
+        - orderId
+        - maSoi
+        - tenSoi
+        - slDonHang
+        - daSanXuat
+        - tienDo
+      properties:
+        orderId:
+          type: string
+        maSoi:
+          type: string
+        tenSoi:
+          type: string
+        slDonHang:
+          type: number
+        daSanXuat:
+          type: number
+        tienDo:
           type: number

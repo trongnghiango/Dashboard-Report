@@ -7,6 +7,10 @@
  */
 
 export type GetWasteBreakdownParams = {
-  dateFrom?: Date;
-  dateTo?: Date;
+  dateFrom?: string;
+  dateTo?: string;
+  /**
+   * Filter by machine name
+   */
+  may?: string;
 };

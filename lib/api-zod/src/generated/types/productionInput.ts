@@ -9,8 +9,8 @@
 export interface ProductionInput {
   /** @nullable */
   stt?: number | null;
-  ngayNhap: Date;
-  ngaySanXuat: Date;
+  ngayNhap: string;
+  ngaySanXuat: string;
   /** @nullable */
   lenhXK?: string | null;
   /** @nullable */
