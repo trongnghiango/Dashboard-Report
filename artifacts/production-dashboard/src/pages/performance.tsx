@@ -4,14 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Gauge, Zap, Clock, ShieldCheck } from "lucide-react";
+import { usePeriodStore } from "@/stores/usePeriodStore";
+import { PeriodToolbar } from "@/components/period-toolbar";
 
 export default function Performance() {
-  const [dateFrom, setDateFrom] = React.useState(
-    new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0]
-  );
-  const [dateTo, setDateTo] = React.useState(
-    new Date().toISOString().split('T')[0]
-  );
+  const { dateFrom, dateTo } = usePeriodStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ['oee', dateFrom, dateTo],
@@ -51,27 +48,12 @@ export default function Performance() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Báo Cáo Hiệu Suất (OEE)</h2>
-          <p className="text-muted-foreground">Phân tích hiệu suất thiết bị tổng thể theo ca sản xuất</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="date"
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-          />
-          <span className="text-muted-foreground">đến</span>
-          <input
-            type="date"
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-          />
-        </div>
+      <div className="flex flex-col gap-1">
+        <h2 className="text-3xl font-bold tracking-tight">Báo Cáo Hiệu Suất (OEE)</h2>
+        <p className="text-muted-foreground">Phân tích hiệu suất thiết bị tổng thể theo chu kỳ thời gian</p>
       </div>
+
+      <PeriodToolbar />
 
       {/* Stat Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

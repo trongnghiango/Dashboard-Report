@@ -472,8 +472,14 @@ router.get("/analytics/summary", async (req, res) => {
         tongSLNgay: productionTable.tongSLNgay,
         tongPheNgay: productionWasteTable.tongPheNgay,
         tyLeHoanThanh: productionTable.tyLeHoanThanh,
+        donHang: productionTable.donHang,
+        maSoi: productionTable.maSoi,
+        tenSoi: productionTable.tenSoi,
+        slDonHangDaSX: productionTable.slDonHangDaSX,
+        slDonHang: ordersTable.slDonHang,
       })
       .from(productionTable)
+      .leftJoin(ordersTable, eq(productionTable.orderId, ordersTable.id))
       .leftJoin(productionWasteTable, and(
         or(
           eq(productionTable.orderId, productionWasteTable.orderId),
@@ -491,11 +497,115 @@ router.get("/analytics/summary", async (req, res) => {
   ]);
 
   const sumField = (rows: typeof allRows, field: keyof typeof allRows[0]) =>
-    rows.reduce((acc, r) => acc + (toNum(r[field]) ?? 0), 0);
+    rows.reduce((acc, r) => acc + (toNum(r[field] as any) ?? 0), 0);
 
   const avgHT = allRows.length > 0
     ? allRows.reduce((acc, r) => acc + (toNum(r.tyLeHoanThanh) ?? 0), 0) / allRows.length
     : 0;
+
+  // Gom nhóm đơn hàng để phát hiện Lệnh sản xuất đang có rủi ro
+  const orderMap = new Map<string, {
+    donHang: string;
+    maSoi: string;
+    tenSoi: string;
+    slDonHang: number;
+    slDonHangDaSX: number;
+    tyLeHoanThanh: number;
+    totalWaste: number;
+  }>();
+
+  for (const r of allRows) {
+    if (!r.donHang) continue;
+    const existing = orderMap.get(r.donHang);
+    const wasteNum = toNum(r.tongPheNgay) ?? 0;
+    if (!existing) {
+      orderMap.set(r.donHang, {
+        donHang: r.donHang,
+        maSoi: r.maSoi ?? "",
+        tenSoi: r.tenSoi ?? "",
+        slDonHang: toNum(r.slDonHang) ?? 0,
+        slDonHangDaSX: toNum(r.slDonHangDaSX) ?? 0,
+        tyLeHoanThanh: toNum(r.tyLeHoanThanh) ?? 0,
+        totalWaste: wasteNum,
+      });
+    } else {
+      existing.totalWaste += wasteNum;
+      const curHT = toNum(r.tyLeHoanThanh) ?? 0;
+      if (curHT > existing.tyLeHoanThanh) {
+        existing.tyLeHoanThanh = curHT;
+        existing.slDonHangDaSX = toNum(r.slDonHangDaSX) ?? 0;
+      }
+      if (!existing.slDonHang && r.slDonHang) {
+        existing.slDonHang = toNum(r.slDonHang) ?? 0;
+      }
+    }
+  }
+
+  const ordersAtRisk: Array<{
+    donHang: string;
+    maSoi: string;
+    tenSoi: string;
+    slDonHang: number;
+    slDonHangDaSX: number;
+    tyLeHoanThanh: number;
+    tyLePheLieu: number;
+    riskLevel: "CRITICAL" | "WARNING" | "SAFE";
+    suggestedAction: string;
+  }> = [];
+
+  const startMs = new Date(fromFilter).getTime();
+  const endMs = new Date(toFilter).getTime();
+  const nowMs = Date.now();
+  let elapsedRatio = 0.5;
+  if (endMs > startMs && !isNaN(startMs) && !isNaN(endMs)) {
+    const clampedNow = Math.max(startMs, Math.min(nowMs, endMs));
+    elapsedRatio = (clampedNow - startMs) / (endMs - startMs);
+  }
+
+  for (const item of orderMap.values()) {
+    if (item.tyLeHoanThanh >= 100) continue;
+
+    const slCamKet = item.slDonHang > 0 ? item.slDonHang : (item.slDonHangDaSX > 0 ? item.slDonHangDaSX * 1.5 : 1000);
+    const tyLePheLieu = Math.round((item.totalWaste / slCamKet) * 1000) / 10;
+    const actualRatio = item.tyLeHoanThanh / 100;
+    const progressGap = elapsedRatio - actualRatio;
+
+    let riskLevel: "CRITICAL" | "WARNING" | "SAFE" = "SAFE";
+    let suggestedAction = "Tiến độ sản xuất ổn định trong dải ngày.";
+
+    if (progressGap > 0.15 || tyLePheLieu > 5.0) {
+      riskLevel = "CRITICAL";
+      if (tyLePheLieu > 5.0) {
+        suggestedAction = `Tỷ lệ phế liệu vượt trần (${tyLePheLieu}%), đề nghị kiểm tra thông số nhiệt cụm máy ép.`;
+      } else {
+        suggestedAction = `Tiến độ hụt nghiêm trọng (-${Math.round(progressGap * 100)}%), khẩn trương bố trí thiết bị chạy tăng ca.`;
+      }
+    } else if (progressGap > 0.05 || tyLePheLieu > 3.5) {
+      riskLevel = "WARNING";
+      if (tyLePheLieu > 3.5) {
+        suggestedAction = `Hao hụt phế liệu ở mức chú ý (${tyLePheLieu}%), cần theo dõi sát trục kéo sợi.`;
+      } else {
+        suggestedAction = `Tiến độ chậm hơn định mức (-${Math.round(progressGap * 100)}%), cần tối ưu hóa thời gian chuyển đổi mã sợi.`;
+      }
+    }
+
+    if (riskLevel !== "SAFE" || ordersAtRisk.length < 3) {
+      ordersAtRisk.push({
+        donHang: item.donHang,
+        maSoi: item.maSoi,
+        tenSoi: item.tenSoi,
+        slDonHang: item.slDonHang,
+        slDonHangDaSX: item.slDonHangDaSX,
+        tyLeHoanThanh: item.tyLeHoanThanh,
+        tyLePheLieu,
+        riskLevel,
+        suggestedAction,
+      });
+    }
+  }
+
+  const riskWeight = { CRITICAL: 0, WARNING: 1, SAFE: 2 };
+  ordersAtRisk.sort((a, b) => riskWeight[a.riskLevel] - riskWeight[b.riskLevel]);
 
   res.json({
     tongSLNgayHienTai: sumField(todayRows, "tongSLNgay"),
@@ -508,6 +618,7 @@ router.get("/analytics/summary", async (req, res) => {
     tyLeHoanThanhTB: Math.round(avgHT * 10) / 10,
     soRecordHomNay: todayRows.length,
     soRecordTuan: weekRows.length,
+    ordersAtRisk,
   });
 });
 

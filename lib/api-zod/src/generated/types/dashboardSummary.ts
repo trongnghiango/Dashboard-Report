@@ -5,6 +5,7 @@
  * Production Dashboard API
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderRiskForecast } from "./orderRiskForecast";
 
 export interface DashboardSummary {
   tongSLNgayHienTai: number;
@@ -17,4 +18,5 @@ export interface DashboardSummary {
   tyLeHoanThanhTB: number;
   soRecordHomNay?: number;
   soRecordTuan?: number;
+  ordersAtRisk: OrderRiskForecast[];
 }

@@ -23,6 +23,8 @@ export * from "./listProductionParams";
 export * from "./order";
 export * from "./orderCompletion";
 export * from "./orderInput";
+export * from "./orderRiskForecast";
+export * from "./orderRiskForecastRiskLevel";
 export * from "./outputTrendPoint";
 export * from "./production";
 export * from "./productionInput";

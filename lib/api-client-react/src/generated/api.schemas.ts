@@ -284,6 +284,27 @@ export interface ProductionListResponse {
   limit: number;
 }
 
+export type OrderRiskForecastRiskLevel =
+  (typeof OrderRiskForecastRiskLevel)[keyof typeof OrderRiskForecastRiskLevel];
+
+export const OrderRiskForecastRiskLevel = {
+  CRITICAL: "CRITICAL",
+  WARNING: "WARNING",
+  SAFE: "SAFE",
+} as const;
+
+export interface OrderRiskForecast {
+  donHang: string;
+  maSoi: string;
+  tenSoi: string;
+  slDonHang: number;
+  slDonHangDaSX: number;
+  tyLeHoanThanh: number;
+  tyLePheLieu: number;
+  riskLevel: OrderRiskForecastRiskLevel;
+  suggestedAction: string;
+}
+
 export interface DashboardSummary {
   tongSLNgayHienTai: number;
   tongSLTuan: number;
@@ -295,6 +316,7 @@ export interface DashboardSummary {
   tyLeHoanThanhTB: number;
   soRecordHomNay?: number;
   soRecordTuan?: number;
+  ordersAtRisk: OrderRiskForecast[];
 }
 
 export interface OutputTrendPoint {

@@ -18,6 +18,8 @@ async function buildAll() {
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
     platform: "node",
     bundle: true,
+    minify: true,       // Nén code, xóa khoảng trắng/comment
+    treeShaking: true,  // Cắt bỏ các hàm không dùng đến
     format: "esm",
     outdir: distDir,
     outExtension: { ".js": ".mjs" },

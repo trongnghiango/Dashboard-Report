@@ -5,49 +5,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import { Activity, Factory, FileText, AlertTriangle, Gauge } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import { usePeriodStore } from "@/stores/usePeriodStore";
+import { PeriodToolbar } from "@/components/period-toolbar";
+import { OrderRiskBanner } from "@/components/order-risk-banner";
 
 export default function Dashboard() {
-  const today = new Date();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 7);
-  
-  const defaultDateTo = today.toISOString().split('T')[0];
-  const defaultDateFrom = sevenDaysAgo.toISOString().split('T')[0];
-
-  const [dateFrom, setDateFrom] = React.useState<string>(defaultDateFrom);
-  const [dateTo, setDateTo] = React.useState<string>(defaultDateTo);
-  const [may, setMay] = React.useState<string>("");
-
-  const [selectedYear, setSelectedYear] = React.useState<string>("");
-  const [selectedQuarter, setSelectedQuarter] = React.useState<string>("");
-  const [selectedMonth, setSelectedMonth] = React.useState<string>("");
-
-  const handleYearSelect = (year: string) => {
-    setSelectedYear(year);
-    setSelectedQuarter("");
-    setSelectedMonth("");
-    setDateFrom(`${year}-01-01`);
-    setDateTo(`${year}-12-31`);
-  };
-
-  const handleQuarterSelect = (quarter: string) => {
-    const year = selectedYear || "2026";
-    setSelectedQuarter(quarter);
-    setSelectedMonth("");
-    if (quarter === "1") { setDateFrom(`${year}-01-01`); setDateTo(`${year}-03-31`); }
-    if (quarter === "2") { setDateFrom(`${year}-04-01`); setDateTo(`${year}-06-30`); }
-    if (quarter === "3") { setDateFrom(`${year}-07-01`); setDateTo(`${year}-09-30`); }
-    if (quarter === "4") { setDateFrom(`${year}-10-01`); setDateTo(`${year}-12-31`); }
-  };
-
-  const handleMonthSelect = (month: string) => {
-    const year = selectedYear || "2026";
-    setSelectedMonth(month);
-    const m = month.padStart(2, '0');
-    setDateFrom(`${year}-${m}-01`);
-    const lastDay = new Date(Number(year), Number(month), 0).getDate();
-    setDateTo(`${year}-${m}-${lastDay}`);
-  };
+  const { dateFrom, dateTo, may, setMachine } = usePeriodStore();
 
   const params = { 
     dateFrom: dateFrom || undefined, 
@@ -93,121 +56,32 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Thiết Bị</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-1">
-            {["", "Máy 1", "Máy 2", "Máy 3"].map((m) => (
-              <button
-                key={m}
-                onClick={() => setMay(m)}
-                className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                  may === m
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                }`}
-              >
-                {m === "" ? "Tất cả" : m}
-              </button>
-            ))}
-          </CardContent>
-        </Card>
+      <PeriodToolbar />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Năm</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-1">
-            {["2024", "2025", "2026"].map((y) => (
-              <button
-                key={y}
-                onClick={() => handleYearSelect(y)}
-                className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                  selectedYear === y
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                }`}
-              >
-                {y}
-              </button>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Quý</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-1">
-            {["1", "2", "3", "4"].map((q) => (
-              <button
-                key={q}
-                onClick={() => handleQuarterSelect(q)}
-                className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                  selectedQuarter === q
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                }`}
-              >
-                Q{q}
-              </button>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Tháng</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-4 gap-1">
-            {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((m) => (
-              <button
-                key={m}
-                onClick={() => handleMonthSelect(m)}
-                className={`px-1 py-1 text-xs rounded-md transition-colors ${
-                  selectedMonth === m
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                }`}
-              >
-                T{m}
-              </button>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Khoảng Ngày</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1">
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => {
-                setDateFrom(e.target.value);
-                setSelectedYear("");
-                setSelectedQuarter("");
-                setSelectedMonth("");
-              }}
-              className="bg-background border rounded-md px-2 py-1 text-xs"
-            />
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => {
-                setDateTo(e.target.value);
-                setSelectedYear("");
-                setSelectedQuarter("");
-                setSelectedMonth("");
-              }}
-              className="bg-background border rounded-md px-2 py-1 text-xs"
-            />
-          </CardContent>
-        </Card>
+      {/* Row lọc Thiết bị tinh gọn */}
+      <div className="flex items-center gap-2 bg-card border rounded-lg p-2 shadow-xs">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
+          Bộ lọc máy:
+        </span>
+        <div className="flex flex-wrap gap-1">
+          {["", "Máy 1", "Máy 2", "Máy 3"].map((m) => (
+            <button
+              key={m}
+              onClick={() => setMachine(m)}
+              className={`px-2.5 py-1 text-xs rounded-md transition-all font-medium ${
+                (may || "") === m
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              {m === "" ? "Tất cả thiết bị" : m}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Cảnh báo Sớm & Quản trị Rủi ro Đơn hàng */}
+      <OrderRiskBanner ordersAtRisk={summary?.ordersAtRisk} isLoading={loadingSummary} />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

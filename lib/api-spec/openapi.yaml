@@ -718,6 +718,7 @@ components:
         - tongPheThang
         - soLenhDangSX
         - tyLeHoanThanhTB
+        - ordersAtRisk
       properties:
         tongSLNgayHienTai:
           type: number
@@ -739,6 +740,10 @@ components:
           type: integer
         soRecordTuan:
           type: integer
+        ordersAtRisk:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderRiskForecast"
 
     OutputTrendPoint:
       type: object
@@ -888,3 +893,36 @@ components:
           type: number
         tienDo:
           type: number
+
+    OrderRiskForecast:
+      type: object
+      required:
+        - donHang
+        - maSoi
+        - tenSoi
+        - slDonHang
+        - slDonHangDaSX
+        - tyLeHoanThanh
+        - tyLePheLieu
+        - riskLevel
+        - suggestedAction
+      properties:
+        donHang:
+          type: string
+        maSoi:
+          type: string
+        tenSoi:
+          type: string
+        slDonHang:
+          type: number
+        slDonHangDaSX:
+          type: number
+        tyLeHoanThanh:
+          type: number
+        tyLePheLieu:
+          type: number
+        riskLevel:
+          type: string
+          enum: [CRITICAL, WARNING, SAFE]
+        suggestedAction:
+          type: string

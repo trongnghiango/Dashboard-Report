@@ -395,6 +395,19 @@ export const GetSummaryResponse = zod.object({
   tyLeHoanThanhTB: zod.number(),
   soRecordHomNay: zod.number().optional(),
   soRecordTuan: zod.number().optional(),
+  ordersAtRisk: zod.array(
+    zod.object({
+      donHang: zod.string(),
+      maSoi: zod.string(),
+      tenSoi: zod.string(),
+      slDonHang: zod.number(),
+      slDonHangDaSX: zod.number(),
+      tyLeHoanThanh: zod.number(),
+      tyLePheLieu: zod.number(),
+      riskLevel: zod.enum(["CRITICAL", "WARNING", "SAFE"]),
+      suggestedAction: zod.string(),
+    }),
+  ),
 });
 
 /**
