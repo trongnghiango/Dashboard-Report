@@ -26,6 +26,7 @@ export function Layout({ children }: LayoutProps) {
     { href: "/san-xuat", label: "Báo Cáo Sản Xuất", icon: Factory },
     { href: "/don-hang", label: "Đơn Hàng", icon: ListTodo },
     { href: "/phe-lieu", label: "Phế Liệu", icon: Recycle },
+    { href: "/hieu-suat", label: "Hiệu Suất", icon: BarChart3 },
   ];
 
   return (

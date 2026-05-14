@@ -9,6 +9,7 @@ import Dashboard from "@/pages/dashboard";
 import Production from "@/pages/production";
 import Orders from "@/pages/orders";
 import Waste from "@/pages/waste";
+import Performance from "@/pages/performance";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ function Router() {
         <Route path="/san-xuat" component={Production} />
         <Route path="/don-hang" component={Orders} />
         <Route path="/phe-lieu" component={Waste} />
+        <Route path="/hieu-suat" component={Performance} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
