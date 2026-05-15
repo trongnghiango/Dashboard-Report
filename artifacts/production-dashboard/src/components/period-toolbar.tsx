@@ -63,7 +63,7 @@ export function PeriodToolbar() {
   };
 
   return (
-    <div className="sticky top-14 z-20 my-2 rounded-xl border bg-background/80 backdrop-blur-md p-2 shadow-sm transition-all">
+    <div className="sticky top-14 sm:top-3 z-40 my-2 rounded-xl border bg-background/80 backdrop-blur-md p-2 shadow-sm transition-all">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         {/* Left: Segmented Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-thin">
