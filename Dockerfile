@@ -12,7 +12,7 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 # Copy tất cả các package.json của các workspace để cache layer install
 COPY artifacts/api-server/package.json ./artifacts/api-server/
-COPY artifacts/api-zod/package.json ./artifacts/api-zod/
+COPY lib/api-zod/package.json ./lib/api-zod/
 COPY lib/db/package.json ./lib/db/
 
 # Cài đặt dependencies (chỉ cài những gì cần để build)
