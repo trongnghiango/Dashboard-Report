@@ -25,9 +25,8 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# CHỈ COPY FILE BUNDLE DUY NHẤT
-# Vì chúng ta đã đóng gói tất cả vào 1 file, không cần node_modules nữa!
-COPY --from=builder /app/artifacts/api-server/dist/index.mjs ./index.mjs
+# COPY TOÀN BỘ THƯ MỤC DIST (Bao gồm index.mjs và các pino-workers)
+COPY --from=builder /app/artifacts/api-server/dist/ ./
 
 # Biến môi trường
 ENV NODE_ENV=production
