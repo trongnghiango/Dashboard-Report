@@ -1,9 +1,13 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
-    "types": ["node"]
+    "baseUrl": "..",
+    "types": ["node"],
+    "paths": {
+      "@workspace/db": ["./lib/db/src"],
+      "@workspace/api-zod": ["./lib/api-zod/src"],
+      "@workspace/api-client-react": ["./lib/api-client-react/src"]
+    }
   },
-  "include": ["src"]
+  "include": ["**/*.ts", "*.ts"]
 }
