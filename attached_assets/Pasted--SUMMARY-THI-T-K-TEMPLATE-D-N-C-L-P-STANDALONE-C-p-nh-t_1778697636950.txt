@@ -3,14 +3,14 @@
 *(Cập nhật: Kiến trúc Vite Middleware / Single Port)*
 
 ### 1. Tổng quan & Quyết định Kiến trúc
-*   **Mô hình**: **Monorepo thu nhỏ chạy Single Process** (Vite Middleware / BFF Pattern).
+*   **Mô hình**: **Monorepo** chạy **Single Process** (Vite Middleware / BFF Pattern).
 *   **Cách thức vận hành**: 
-    *   Chỉ dùng **1 cổng (Port)** duy nhất cho cả Frontend và Backend.
-    *   Khi chạy lệnh dev, Server (Express/Hono) sẽ khởi tạo và nhúng Vite ở chế độ middleware để xử lý giao diện và HMR.
+    *   Chỉ dùng **1 cổng (Port)** duy nhất cho cả Frontend và Backend. Cổng này sẽ được forward sang cổng của Vite khi chạy dev mode, hoặc serve các file tĩnh khi chạy production mode.
+    *   Khi chạy lệnh dev, Server (Hono) sẽ khởi tạo và nhúng Vite ở chế độ middleware để xử lý giao diện và HMR.
     *   Khi Production, Server sẽ serve các file tĩnh đã build của Frontend.
 *   **Tech Stack**:
     *   **Frontend**: React + Vite + TanStack Router (giữ chuẩn giống STAX FE).
-    *   **Backend**: Node.js (Express hoặc Hono).
+    *   **Backend**: Node.js (Hono).
     *   **Database**: PostgreSQL + Drizzle ORM.
     *   **Contract/Validation**: Zod.
 
