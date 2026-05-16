@@ -1,0 +1,9 @@
+node_modules
+.git
+.github
+dist
+artifacts/production-dashboard/dist
+artifacts/production-dashboard/node_modules
+.env
+*.md
+docs
