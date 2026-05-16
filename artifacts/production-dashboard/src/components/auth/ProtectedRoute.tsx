@@ -12,19 +12,19 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
-  const token = localStorage.getItem("auth_token");
-  const { isLoading } = useMeQuery(!isAuthenticated);
+  const isLoggedIn = localStorage.getItem("is_logged_in") === "true";
+  const { isLoading } = useMeQuery(!isAuthenticated && isLoggedIn);
 
-  console.log("[ProtectedRoute] Status:", { token: !!token, isAuthenticated, isLoading });
+  console.log("[ProtectedRoute] Status:", { isLoggedIn, isAuthenticated, isLoading });
 
-  // 1. Nếu không có token -> Chuyển hướng ngay về login
-  if (!token) {
-    console.log("[ProtectedRoute] No token, redirecting to /login");
+  // 1. Nếu không có dấu hiệu đã đăng nhập -> Chuyển hướng ngay về login
+  if (!isLoggedIn && !isAuthenticated) {
+    console.log("[ProtectedRoute] Not logged in, redirecting to /login");
     return <Redirect to="/login" />;
   }
 
-  // 2. Nếu có token nhưng đang load thông tin user -> Hiện loading
-  if (isLoading && !isAuthenticated) {
+  // 1. Nếu đang load thông tin user -> Hiện loading
+  if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -32,8 +32,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  // 3. Nếu đã load xong mà vẫn chưa xác thực thành công (Token sai/hết hạn) -> Chuyển hướng
-  if (!isLoading && !isAuthenticated) {
+  // 2. Nếu không load, mà cũng không có auth -> Redirect về login
+  if (!isAuthenticated) {
+    console.log("[ProtectedRoute] Unauthorized, redirecting to /login");
     return <Redirect to="/login" />;
   }
 

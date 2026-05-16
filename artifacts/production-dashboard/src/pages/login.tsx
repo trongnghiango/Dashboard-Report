@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginRequestSchema, LoginRequest } from "@workspace/api-zod";
 import { useLoginMutation } from "../hooks/api/useAuth";
+import { useAuthStore } from "../stores/auth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,14 @@ const LoginPage = () => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const loginMutation = useLoginMutation();
+  const { isAuthenticated } = useAuthStore();
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      console.log("[LoginPage] Already authenticated, redirecting to /");
+      setLocation("/");
+    }
+  }, [isAuthenticated, setLocation]);
 
   const form = useForm<LoginRequest>({
     resolver: zodResolver(loginRequestSchema),
