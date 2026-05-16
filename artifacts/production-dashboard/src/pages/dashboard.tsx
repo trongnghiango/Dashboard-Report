@@ -10,6 +10,7 @@ import { PeriodToolbar } from "@/components/period-toolbar";
 import { OrderRiskBanner } from "@/components/order-risk-banner";
 
 export default function Dashboard() {
+  console.log("[Dashboard] Rendering start");
   const { dateFrom, dateTo, may, setMachine } = usePeriodStore();
 
   const params = { 

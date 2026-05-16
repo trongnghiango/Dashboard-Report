@@ -14,20 +14,31 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+import { useAuthStore } from "../stores/auth";
+import { useLogoutMutation } from "../hooks/api/useAuth";
+import { LogOut } from "lucide-react";
+
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
-  const [location] = useLocation();
+  console.log("[Layout] Rendering");
+  const [location, setLocation] = useLocation();
+  const can = useAuthStore((state) => state.can);
+  const logoutMutation = useLogoutMutation();
 
   const navItems = [
-    { href: "/", label: "Tổng Quan", icon: Activity },
-    { href: "/san-xuat", label: "Báo Cáo Sản Xuất", icon: Factory },
-    { href: "/don-hang", label: "Đơn Hàng", icon: ListTodo },
-    { href: "/phe-lieu", label: "Phế Liệu", icon: Recycle },
-    { href: "/hieu-suat", label: "Hiệu Suất", icon: BarChart3 },
-  ];
+    { href: "/", label: "Tổng Quan", icon: Activity, resource: "dashboard" },
+    { href: "/san-xuat", label: "Báo Cáo Sản Xuất", icon: Factory, resource: "production" },
+    { href: "/don-hang", label: "Đơn Hàng", icon: ListTodo, resource: "orders" },
+    { href: "/phe-lieu", label: "Phế Liệu", icon: Recycle, resource: "waste" },
+    { href: "/hieu-suat", label: "Hiệu Suất", icon: BarChart3, resource: "performance" },
+  ].filter(item => {
+    const allowed = item.resource === "dashboard" || can(item.resource, "READ");
+    console.log(`[Layout] NavItem ${item.label} allowed:`, allowed);
+    return allowed;
+  });
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -105,6 +116,15 @@ export function Layout({ children }: LayoutProps) {
             })}
           </nav>
           <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+              onClick={() => logoutMutation.mutate()}
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="sr-only">Đăng xuất</span>
+            </Button>
             <Link
               href="#"
               className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"

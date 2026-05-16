@@ -11,20 +11,31 @@ import Orders from "@/pages/orders";
 import Waste from "@/pages/waste";
 import Performance from "@/pages/performance";
 
+import LoginPage from "@/pages/login";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+
 const queryClient = new QueryClient();
 
 function Router() {
+  console.log("[Router] Current Location:", window.location.pathname);
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/san-xuat" component={Production} />
-        <Route path="/don-hang" component={Orders} />
-        <Route path="/phe-lieu" component={Waste} />
-        <Route path="/hieu-suat" component={Performance} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      <Route path="/login" component={LoginPage} />
+      <Route>
+        <ProtectedRoute>
+          <Layout>
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/san-xuat" component={Production} />
+              <Route path="/don-hang" component={Orders} />
+              <Route path="/phe-lieu" component={Waste} />
+              <Route path="/hieu-suat" component={Performance} />
+              <Route component={NotFound} />
+            </Switch>
+          </Layout>
+        </ProtectedRoute>
+      </Route>
+    </Switch>
   );
 }
 
