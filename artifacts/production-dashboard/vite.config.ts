@@ -4,15 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const mode = process.env.NODE_ENV || "development";
-const env = loadEnv(mode, path.resolve(import.meta.dirname, "../../"), "");
-
-const rawPort = env.VITE_PORT || "5173";
-const port = Number(rawPort);
-
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid VITE_PORT value: "${rawPort}"`);
-}
 
 const mode = process.env.NODE_ENV || "development";
 const env = loadEnv(mode, path.resolve(import.meta.dirname, "../../"), "");
