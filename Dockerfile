@@ -1,19 +1,19 @@
 # --- STAGE 1: Build ---
-FROM node:22 AS builder
+FROM node:22-alpine AS builder
+
+# Giới hạn RAM cho Node.js để không vượt quá 512MB của Render Free
+ENV NODE_OPTIONS="--max-old-space-size=400"
 
 # Cài đặt pnpm
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy toàn bộ mã nguồn dự án
+# Copy mã nguồn
 COPY . .
 
-# Cài đặt dependencies (bỏ frozen-lockfile để tránh lỗi sai lệch môi trường)
-# Thêm --no-verify-store-integrity để tăng tốc và tránh lỗi checksum
-RUN pnpm install --no-frozen-lockfile
+# Cài đặt với các cờ tiết kiệm tài nguyên
+RUN pnpm install --no-frozen-lockfile --aggregate-output
 
 # Build Backend
 WORKDIR /app/artifacts/api-server
