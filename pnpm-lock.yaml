@@ -157,6 +157,12 @@ importers:
 
   .:
     devDependencies:
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
       prettier:
         specifier: ^3.8.1
         version: 3.8.1
