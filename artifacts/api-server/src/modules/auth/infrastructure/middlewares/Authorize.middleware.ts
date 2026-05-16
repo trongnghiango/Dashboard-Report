@@ -15,6 +15,6 @@ export const authorize = (rbacRepository: IRbacRepository, resource: string, act
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    next();
+    return next();
   };
 };

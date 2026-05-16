@@ -25,9 +25,9 @@ export const createAuthRouter = (authService: AuthService, jwtSecret: string) =>
       });
 
       res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
-      res.json(authResponse);
+      return res.json(authResponse);
     } catch (err: any) {
-      res.status(400).json({ message: err.message });
+      return res.status(400).json({ message: err.message });
     }
   });
 
@@ -44,10 +44,10 @@ export const createAuthRouter = (authService: AuthService, jwtSecret: string) =>
 
       // Cập nhật Cookie với RT mới (Token Rotation)
       res.cookie(REFRESH_COOKIE_NAME, newRefreshToken, COOKIE_OPTIONS);
-      res.json({ accessToken });
+      return res.json({ accessToken });
     } catch (err: any) {
       res.clearCookie(REFRESH_COOKIE_NAME, { path: "/api/auth" });
-      res.status(401).json({ message: err.message });
+      return res.status(401).json({ message: err.message });
     }
   });
 
@@ -56,9 +56,9 @@ export const createAuthRouter = (authService: AuthService, jwtSecret: string) =>
     try {
       if (!req.user) throw new Error("Unauthorized");
       const result = await authService.getMe(req.user.id);
-      res.json(result);
+      return res.json(result);
     } catch (err: any) {
-      res.status(401).json({ message: err.message });
+      return res.status(401).json({ message: err.message });
     }
   });
 
@@ -70,9 +70,9 @@ export const createAuthRouter = (authService: AuthService, jwtSecret: string) =>
         await authService.logout(refreshToken);
       }
       res.clearCookie(REFRESH_COOKIE_NAME, { path: "/api/auth" });
-      res.json({ success: true });
+      return res.json({ success: true });
     } catch (err: any) {
-      res.status(400).json({ message: err.message });
+      return res.status(400).json({ message: err.message });
     }
   });
 

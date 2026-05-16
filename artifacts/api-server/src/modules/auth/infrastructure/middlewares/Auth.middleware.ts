@@ -22,7 +22,7 @@ export const authenticate = (jwtSecret: string) => {
         id: decoded.sub,
         username: decoded.username,
       };
-      next();
+      return next();
     } catch (err) {
       return res.status(401).json({ message: "Invalid token" });
     }
