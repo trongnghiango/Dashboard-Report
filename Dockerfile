@@ -12,8 +12,8 @@ WORKDIR /app
 # Copy toàn bộ mã nguồn
 COPY . .
 
-# Cài đặt dependencies
-RUN pnpm install --no-frozen-lockfile --aggregate-output
+# Cài đặt dependencies (bỏ qua scripts để tránh lỗi 'Use pnpm instead' do môi trường Docker)
+RUN pnpm install --no-frozen-lockfile --aggregate-output --ignore-scripts
 
 # Build Backend (Tạo ra file bundle siêu standalone)
 WORKDIR /app/artifacts/api-server
