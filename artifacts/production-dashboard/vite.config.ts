@@ -49,6 +49,24 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    sourcemap: false,
+    minify: 'esbuild',
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            // 1. Tách riêng các thư viện cực nặng để load theo yêu cầu (Dynamic Load)
+            if (id.includes('xlsx')) return 'xlsx-vendor';
+            if (id.includes('recharts')) return 'viz-vendor';
+            
+            // 2. Tất cả các thư viện node_modules còn lại gom vào vendor chính
+            // Điều này giúp tránh lỗi Circular Dependency (Phụ thuộc vòng)
+            return 'vendor';
+          }
+        },
+      },
+    },
   },
   server: {
     port,

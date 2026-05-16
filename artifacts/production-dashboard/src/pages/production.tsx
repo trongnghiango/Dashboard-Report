@@ -33,7 +33,7 @@ import {
   ListFilter, 
   SlidersHorizontal 
 } from "lucide-react";
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx"; // Đã chuyển sang dynamic import bên dưới để tối ưu dung lượng build
 
 // Component hiển thị chi tiết các mã sợi con khi mở rộng Lệnh XK cha
 function LazyProgressChildRows({ lenhXK }: { lenhXK: string }) {
@@ -511,6 +511,7 @@ export default function Production() {
     const reader = new FileReader();
     reader.onload = async (evt) => {
       const bstr = evt.target?.result;
+      const XLSX = await import("xlsx");
       const wb = XLSX.read(bstr, { type: "binary" });
       
       const sheetNames = wb.SheetNames;
