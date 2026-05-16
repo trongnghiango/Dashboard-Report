@@ -10,6 +10,10 @@ import {
   ResourceResponse,
   RolePermissionsMatrix,
   UpdateRolePermissionsInput,
+  PermissionGroup,
+  RoleTemplate,
+  RoleMember,
+  UpdateRoleMembersInput,
 } from "@workspace/api-zod";
 
 // ─── Settings ────────────────────────────────────────────────────────────────
@@ -106,6 +110,50 @@ export const useUpdateMatrixMutation = (roleId: number | null) => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "rbac", "matrix", roleId] });
+    },
+  });
+};
+
+export const useRbacGroups = () => {
+  return useQuery({
+    queryKey: ["admin", "rbac", "groups"],
+    queryFn: () => customFetch<PermissionGroup[]>("/api/admin/rbac/groups"),
+  });
+};
+
+export const useRbacTemplates = () => {
+  return useQuery({
+    queryKey: ["admin", "rbac", "templates"],
+    queryFn: () => customFetch<RoleTemplate[]>("/api/admin/rbac/templates"),
+  });
+};
+
+export const useRbacTemplateDetail = (templateId: number | null) => {
+  return useQuery({
+    queryKey: ["admin", "rbac", "templates", templateId],
+    queryFn: () => customFetch<RoleTemplate>(`/api/admin/rbac/templates/${templateId}`),
+    enabled: !!templateId,
+  });
+};
+
+export const useRoleMembers = (roleId: number | null) => {
+  return useQuery({
+    queryKey: ["admin", "rbac", "roles", roleId, "members"],
+    queryFn: () => customFetch<RoleMember[]>(`/api/admin/rbac/roles/${roleId}/members`),
+    enabled: !!roleId,
+  });
+};
+
+export const useUpdateRoleMembersMutation = (roleId: number | null) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateRoleMembersInput) =>
+      customFetch(`/api/admin/rbac/roles/${roleId}/members`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "rbac", "roles", roleId, "members"] });
     },
   });
 };
