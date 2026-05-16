@@ -45,6 +45,42 @@ export const userRolesTable = pgTable("user_roles", {
   uniqueIndex("idx_user_role").on(t.userId, t.roleId),
 ]);
 
+export const permissionGroupsTable = pgTable("permission_groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+});
+
+export const permissionGroupItemsTable = pgTable("permission_group_items", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => permissionGroupsTable.id).notNull(),
+  resourceId: integer("resource_id").references(() => resourcesTable.id).notNull(),
+  action: text("action").notNull(),
+}, (t) => [
+  uniqueIndex("idx_group_item").on(t.groupId, t.resourceId, t.action),
+]);
+
+export const roleTemplatesTable = pgTable("role_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+});
+
+export const roleTemplateGroupsTable = pgTable("role_template_groups", {
+  templateId: integer("template_id").references(() => roleTemplatesTable.id).notNull(),
+  groupId: integer("group_id").references(() => permissionGroupsTable.id).notNull(),
+}, (t) => [
+  uniqueIndex("idx_template_group").on(t.templateId, t.groupId),
+]);
+
+export const roleTemplatePermissionsTable = pgTable("role_template_permissions", {
+  templateId: integer("template_id").references(() => roleTemplatesTable.id).notNull(),
+  resourceId: integer("resource_id").references(() => resourcesTable.id).notNull(),
+  action: text("action").notNull(),
+}, (t) => [
+  uniqueIndex("idx_template_permission").on(t.templateId, t.resourceId, t.action),
+]);
+
 export const refreshTokensTable = pgTable("refresh_tokens", {
   id: serial("id").primaryKey(),
   userId: text("user_id").references(() => usersTable.id).notNull(),
