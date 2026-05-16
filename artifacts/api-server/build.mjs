@@ -14,21 +14,24 @@ async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   await esbuild({
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
     platform: "node",
     bundle: true,
-    minify: true,       // Nén code, xóa khoảng trắng/comment
-    treeShaking: true,  // Cắt bỏ các hàm không dùng đến
+    // --- CẤU HÌNH TỐI ƯU THEO MÔI TRƯỜNG ---
+    minify: isProduction,           // Chỉ nén ở Prod để Dev build nhanh hơn
+    treeShaking: true,
+    sourcemap: isProduction ? false : "linked", // Prod không cần sourcemap để bảo mật & nhẹ
+    target: isProduction ? "node22" : undefined, // Prod dùng syntax hiện đại nhất
+    legalComments: isProduction ? "none" : "inline",
+    drop: isProduction ? ["console", "debugger"] : [], // Xóa sạch log rác ở Prod
+    // ---------------------------------------
     format: "esm",
     outdir: distDir,
     outExtension: { ".js": ".mjs" },
     logLevel: "info",
-    // Some packages may not be bundleable, so we externalize them, we can add more here as needed.
-    // Some of the packages below may not be imported or installed, but we're adding them in case they are in the future.
-    // Examples of unbundleable packages:
-    // - uses native modules and loads them dynamically (e.g. sharp)
-    // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
       "*.node",
       "sharp",
@@ -103,10 +106,11 @@ async function buildAll() {
       "puppeteer-core",
       "electron",
     ],
-    sourcemap: "linked",
+    sourcemap: isProduction ? false : "linked",
     plugins: [
-      // pino relies on workers to handle logging, instead of externalizing it we use a plugin to handle it
-      esbuildPluginPino({ transports: ["pino-pretty"] })
+      esbuildPluginPino({ 
+        transports: isProduction ? [] : ["pino-pretty"] 
+      })
     ],
     // Make sure packages that are cjs only (e.g. express) but are bundled continue to work in our esm output file
     banner: {
