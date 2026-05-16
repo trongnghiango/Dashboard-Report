@@ -377,7 +377,9 @@ export async function customFetch<T = unknown>(
     const errorData = await parseErrorBody(response, method);
     
     // Auto-refresh logic for 401 Unauthorized
-    if (response.status === 401 && !requestInfo.url.includes("/api/auth/refresh")) {
+    if (response.status === 401 && 
+        !requestInfo.url.includes("/api/auth/refresh") && 
+        !requestInfo.url.includes("/api/auth/logout")) {
       try {
         const refreshResponse = await fetch("/api/auth/refresh", { method: "POST" });
         if (refreshResponse.ok) {

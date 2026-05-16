@@ -7,7 +7,7 @@ import {
   useGetProgressItems, 
   getGetProgressParentsQueryKey 
 } from "@workspace/api-client-react";
-import { useLocation, useSearch } from "wouter";
+import { useSearch, useNavigate } from "@tanstack/react-router";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -464,33 +464,31 @@ function TabLogsView({
   );
 }
 
+
+
 // ============================================================================
 // MAIN PAGE COMPONENT
 // ============================================================================
 export default function Production() {
-  const searchString = useSearch();
-  const [location, navigate] = useLocation();
+  const searchParams = useSearch({ strict: false }) as any;
+  const navigate = useNavigate();
 
-  const searchParams = React.useMemo(() => new URLSearchParams(searchString), [searchString]);
-  
-  const tab = searchParams.get("tab") || "parents";
-  const sortBy = searchParams.get("sortBy") || (tab === "parents" ? "lenhXK" : "ngaySanXuat");
-  const sortOrder = searchParams.get("sortOrder") || "desc";
-  const statusFilter = searchParams.get("statusFilter") || "all";
-  const search = searchParams.get("search") || "";
-  const page = Number(searchParams.get("page")) || 1;
-  const limit = Number(searchParams.get("limit")) || 50;
+  const tab = searchParams.tab || "parents";
+  const sortBy = searchParams.sortBy || (tab === "parents" ? "lenhXK" : "ngaySanXuat");
+  const sortOrder = searchParams.sortOrder || "desc";
+  const statusFilter = searchParams.statusFilter || "all";
+  const search = searchParams.search || "";
+  const page = Number(searchParams.page) || 1;
+  const limit = Number(searchParams.limit) || 50;
 
   const updateSearchParams = (updates: Record<string, string | number | null>) => {
-    const newParams = new URLSearchParams(searchString);
-    Object.entries(updates).forEach(([key, val]) => {
-      if (val === null || val === undefined || val === "") {
-        newParams.delete(key);
-      } else {
-        newParams.set(key, String(val));
-      }
+    navigate({
+      to: '/san-xuat',
+      search: (prev: any) => ({
+        ...prev,
+        ...updates,
+      }),
     });
-    navigate(`${location}?${newParams.toString()}`);
   };
 
   const { data: parentsData, isLoading: isParentsLoading, refetch: refetchParents } = useGetProgressParents(

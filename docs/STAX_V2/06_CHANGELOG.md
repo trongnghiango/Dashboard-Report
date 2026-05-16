@@ -1,5 +1,17 @@
 # STAX V2 System Changelog
 
+### [2026-05-16] - User Avatar Dropdown & Layout Enhancement
+
+- **Module:** `production-dashboard`
+- **Thay đổi:**
+  - `components/layout.tsx`: 
+    - Thay thế nút Logout đơn thuần bằng `User Avatar Dropdown` ở cuối sidebar.
+    - Phân tách menu Sidebar thành 2 nhóm: **Nghiệp vụ** (Top) và **Hệ thống** (Bottom).
+    - Đẩy các mục `Người dùng`, `Phân quyền`, `Cài đặt` xuống khu vực phía trên Avatar để tối ưu không gian làm việc nghiệp vụ.
+  - Tích hợp `useAuthStore` để hiển thị tên và vai trò người dùng (User Info) trực tiếp trên menu.
+  - Bổ sung link điều hướng nhanh tới trang "Cấu hình" (`/admin/settings`).
+  - Sử dụng shadcn/ui `Avatar` với fallback là 2 chữ cái đầu của username để tối ưu hiển thị.
+
 ### [2026-05-16] - Frontend Auth Token Security Upgrade
 
 - **Module:** `production-dashboard`, `api-client-react`

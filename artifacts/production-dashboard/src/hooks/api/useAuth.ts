@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { customFetch } from "@workspace/api-client-react";
 import { LoginRequest, AuthResponse } from "@workspace/api-zod";
 import { useAuthStore } from "../../stores/auth";
@@ -52,6 +53,7 @@ export const useMeQuery = (enabled = true) => {
 export const useLogoutMutation = () => {
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async () => {
@@ -61,12 +63,14 @@ export const useLogoutMutation = () => {
       clearAuth();
       localStorage.removeItem("is_logged_in");
       queryClient.clear();
+      navigate({ to: "/login" });
     },
     onError: () => {
       // Dù lỗi cũng xóa state local để tránh treo session
       clearAuth();
       localStorage.removeItem("is_logged_in");
       queryClient.clear();
+      navigate({ to: "/login" });
     },
   });
 };
