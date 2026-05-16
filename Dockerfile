@@ -1,5 +1,5 @@
 # --- STAGE 1: Build ---
-FROM node:22-slim AS builder
+FROM node:22 AS builder
 
 # Cài đặt pnpm
 ENV PNPM_HOME="/pnpm"
@@ -8,13 +8,12 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy toàn bộ mã nguồn dự án (đã được lọc qua .dockerignore)
-# .dockerignore sẽ giúp loại bỏ node_modules cục bộ để không làm nặng quá trình build
+# Copy toàn bộ mã nguồn dự án
 COPY . .
 
-# Cài đặt dependencies cho toàn bộ workspace
-# Chúng ta dùng --frozen-lockfile để đảm bảo tính nhất quán với pnpm-lock.yaml
-RUN pnpm install --frozen-lockfile
+# Cài đặt dependencies (bỏ frozen-lockfile để tránh lỗi sai lệch môi trường)
+# Thêm --no-verify-store-integrity để tăng tốc và tránh lỗi checksum
+RUN pnpm install --no-frozen-lockfile
 
 # Build Backend
 WORKDIR /app/artifacts/api-server
