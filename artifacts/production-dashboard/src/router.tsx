@@ -13,7 +13,7 @@ import Waste from '@/pages/waste';
 import Performance from '@/pages/performance';
 import LoginPage from '@/pages/login';
 import UsersPage from '@/pages/admin/users';
-import RbacMatrixPage from '@/pages/admin/rbac';
+import RbacMatrixPage from '@/pages/admin/rbac/index';
 import SettingsPage from '@/pages/admin/settings';
 import NotFound from '@/pages/not-found';
 import { Layout } from '@/components/layout';
