@@ -33,6 +33,10 @@ const productionSearchSchema = z.object({
   machineId: z.string().optional(),
 });
 
+const loginSearchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 // 3. Create Root Route (Main Layout Wrapper)
 export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
   component: () => (
@@ -47,6 +51,7 @@ export const rootRoute = createRootRouteWithContext<MyRouterContext>()({
 export const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
+  validateSearch: (search) => loginSearchSchema.parse(search),
   component: LoginPage,
 });
 
@@ -54,10 +59,13 @@ export const loginRoute = createRoute({
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'authenticated',
-  beforeLoad: ({ context }) => {
+  beforeLoad: ({ context, location }) => {
     if (!context.auth.isAuthenticated) {
       throw redirect({
         to: '/login',
+        search: {
+          redirect: location.href,
+        },
       });
     }
   },

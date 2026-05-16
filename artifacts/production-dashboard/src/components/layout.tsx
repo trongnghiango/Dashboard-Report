@@ -205,7 +205,7 @@ export function Layout() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="text-destructive focus:text-destructive cursor-pointer"
-                  onClick={() => logoutMutation.mutate()}
+                  onClick={() => logoutMutation.mutate(routerState.location.href)}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Đăng xuất</span>

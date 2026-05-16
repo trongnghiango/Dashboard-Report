@@ -56,21 +56,28 @@ export const useLogoutMutation = () => {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (redirectTo?: string) => {
       await customFetch("/api/auth/logout", { method: "POST" });
+      return redirectTo;
     },
-    onSuccess: () => {
+    onSuccess: (redirectTo) => {
       clearAuth();
       localStorage.removeItem("is_logged_in");
       queryClient.clear();
-      navigate({ to: "/login" });
+      navigate({ 
+        to: "/login",
+        search: redirectTo ? { redirect: redirectTo } : undefined
+      });
     },
-    onError: () => {
+    onError: (err, redirectTo) => {
       // Dù lỗi cũng xóa state local để tránh treo session
       clearAuth();
       localStorage.removeItem("is_logged_in");
       queryClient.clear();
-      navigate({ to: "/login" });
+      navigate({ 
+        to: "/login",
+        search: redirectTo ? { redirect: redirectTo } : undefined
+      });
     },
   });
 };

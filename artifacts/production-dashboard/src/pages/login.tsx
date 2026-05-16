@@ -11,18 +11,24 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 
+import { loginRoute } from "../router";
+
 const LoginPage = () => {
   console.log("[LoginPage] Rendering");
   const navigate = useNavigate();
+  const search = loginRoute.useSearch();
   const { toast } = useToast();
   const loginMutation = useLoginMutation();
   const { isAuthenticated } = useAuthStore();
 
+  const redirectPath = search.redirect || "/";
+
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate({ to: "/" });
+      console.log("[LoginPage] Already authenticated, redirecting to", redirectPath);
+      navigate({ to: redirectPath as any });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, redirectPath]);
 
   const form = useForm<LoginRequest>({
     resolver: zodResolver(loginRequestSchema),
@@ -36,7 +42,7 @@ const LoginPage = () => {
     loginMutation.mutate(data, {
       onSuccess: () => {
         toast({ title: "Đăng nhập thành công" });
-        navigate({ to: "/" });
+        navigate({ to: redirectPath as any });
       },
       onError: (err: any) => {
         toast({
