@@ -2,9 +2,18 @@ console.log("[main.tsx] Execution started");
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setOnTokenRefreshed } from "@workspace/api-client-react";
+import { useAuthStore } from "./stores/auth";
 
-setAuthTokenGetter(() => localStorage.getItem("auth_token"));
+setAuthTokenGetter(() => useAuthStore.getState().accessToken);
+
+// Quan trọng: Đồng bộ token mới từ customFetch (hạ tầng) vào Zustand (ứng dụng)
+setOnTokenRefreshed((newToken) => {
+  const { user, abilities } = useAuthStore.getState();
+  if (user) {
+    useAuthStore.getState().setAuth(user, abilities, newToken);
+  }
+});
 
 window.onerror = (msg, url, line, col, error) => {
   document.body.innerHTML = `<div style="color:red;padding:20px;font-family:sans-serif;">

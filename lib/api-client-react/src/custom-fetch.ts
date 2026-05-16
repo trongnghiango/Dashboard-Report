@@ -7,6 +7,7 @@ export type ErrorType<T = unknown> = ApiError<T>;
 export type BodyType<T> = T;
 
 export type AuthTokenGetter = () => Promise<string | null> | string | null;
+export type OnTokenRefreshed = (newToken: string) => void;
 
 const NO_BODY_STATUS = new Set([204, 205, 304]);
 const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
@@ -17,6 +18,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _onTokenRefreshed: OnTokenRefreshed | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -42,6 +44,15 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+/**
+ * Register a callback that is invoked whenever a 401 response triggers
+ * a successful token refresh.  The new access token is passed to the callback
+ * so the application can update its state (e.g. Zustand, Redux).
+ */
+export function setOnTokenRefreshed(callback: OnTokenRefreshed | null): void {
+  _onTokenRefreshed = callback;
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -370,6 +381,13 @@ export async function customFetch<T = unknown>(
       try {
         const refreshResponse = await fetch("/api/auth/refresh", { method: "POST" });
         if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          const newToken = data.accessToken;
+          
+          if (newToken && _onTokenRefreshed) {
+            _onTokenRefreshed(newToken);
+          }
+
           // Retry original request
           return customFetch<T>(input, options);
         }

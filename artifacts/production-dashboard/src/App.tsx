@@ -12,6 +12,9 @@ import Waste from "@/pages/waste";
 import Performance from "@/pages/performance";
 
 import LoginPage from "@/pages/login";
+import UsersPage from "@/pages/admin/users";
+import RbacMatrixPage from "@/pages/admin/rbac";
+import SettingsPage from "@/pages/admin/settings";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -30,6 +33,12 @@ function Router() {
               <Route path="/don-hang" component={Orders} />
               <Route path="/phe-lieu" component={Waste} />
               <Route path="/hieu-suat" component={Performance} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/users" component={UsersPage} />
+              <Route path="/admin/rbac" component={RbacMatrixPage} />
+              <Route path="/admin/settings" component={SettingsPage} />
+              
               <Route component={NotFound} />
             </Switch>
           </Layout>

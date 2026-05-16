@@ -10,13 +10,15 @@ import {
   Recycle,
   Search,
   Settings,
+  Users,
+  Shield,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { useAuthStore } from "../stores/auth";
 import { useLogoutMutation } from "../hooks/api/useAuth";
-import { LogOut } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,9 +36,12 @@ export function Layout({ children }: LayoutProps) {
     { href: "/don-hang", label: "Đơn Hàng", icon: ListTodo, resource: "orders" },
     { href: "/phe-lieu", label: "Phế Liệu", icon: Recycle, resource: "waste" },
     { href: "/hieu-suat", label: "Hiệu Suất", icon: BarChart3, resource: "performance" },
+    { href: "/admin/users", label: "Người dùng", icon: Users, resource: "users" },
+    { href: "/admin/rbac", label: "Phân quyền", icon: Shield, resource: "rbac" },
+    { href: "/admin/settings", label: "Cài đặt", icon: Settings, resource: "settings" },
   ].filter(item => {
+    // Luôn cho phép Dashboard, các trang khác check quyền READ
     const allowed = item.resource === "dashboard" || can(item.resource, "READ");
-    console.log(`[Layout] NavItem ${item.label} allowed:`, allowed);
     return allowed;
   });
 
@@ -125,13 +130,6 @@ export function Layout({ children }: LayoutProps) {
               <LogOut className="h-5 w-5" />
               <span className="sr-only">Đăng xuất</span>
             </Button>
-            <Link
-              href="#"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-            >
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Cài đặt</span>
-            </Link>
           </nav>
         </aside>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">

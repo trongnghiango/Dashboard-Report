@@ -2,14 +2,6 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@workspace/db": ["./lib/db/src"],
-      "@workspace/api-zod": ["./lib/api-zod/src"],
-      "@workspace/api-client-react": ["./lib/api-client-react/src"]
-    }
-  },
   "references": [
     {
       "path": "./lib/db"
@@ -19,9 +11,6 @@
     },
     {
       "path": "./lib/api-zod"
-    },
-    {
-      "path": "./scripts"
     }
   ]
 }

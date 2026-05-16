@@ -1,11 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { customFetch, setAuthTokenGetter } from "@workspace/api-client-react";
+import { customFetch } from "@workspace/api-client-react";
 import { LoginRequest, AuthResponse } from "@workspace/api-zod";
 import { useAuthStore } from "../../stores/auth";
-
-// Khởi tạo authTokenGetter để customFetch luôn lấy token từ memory (Zustand)
-// Đặt ở module-level để chạy 1 lần duy nhất khi file được import
-setAuthTokenGetter(() => useAuthStore.getState().accessToken);
 
 export const useLoginMutation = () => {
   const setAuth = useAuthStore((state) => state.setAuth);

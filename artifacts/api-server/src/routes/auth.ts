@@ -5,7 +5,7 @@ import { DrizzleRefreshTokenRepository } from "../modules/auth/infrastructure/pe
 import { AuthService } from "../modules/auth/application/services/Auth.service";
 import { createAuthRouter } from "../modules/auth/infrastructure/controllers/Auth.controller";
 
-const jwtSecret = process.env.SESSION_SECRET || "default_secret";
+const jwtSecret = process.env.JWT_SECRET || process.env.SESSION_SECRET || "dev-secret";
 
 const userRepository = new DrizzleUserRepository();
 const rbacRepository = new DrizzleRbacRepository();
