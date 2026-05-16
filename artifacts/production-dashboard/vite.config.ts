@@ -17,10 +17,10 @@ if (Number.isNaN(port) || port <= 0) {
 const basePath = env.VITE_BASE_PATH || "/";
 const apiUrl = env.VITE_API_URL || "http://localhost:3000";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, path.resolve(import.meta.dirname, "../../"), "");
   const isProduction = mode === "production";
-  
+
   const rawPort = env.VITE_PORT || "5173";
   const port = Number(rawPort);
 
@@ -80,24 +80,25 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-  server: {
-    port,
-    strictPort: true,
-    host: "0.0.0.0",
-    allowedHosts: true,
-    fs: {
-      strict: true,
-    },
-    proxy: {
-      "/api": {
-        target: apiUrl,
-        changeOrigin: true,
+    server: {
+      port,
+      strictPort: true,
+      host: "0.0.0.0",
+      allowedHosts: true,
+      fs: {
+        strict: true,
+      },
+      proxy: {
+        "/api": {
+          target: apiUrl,
+          changeOrigin: true,
+        },
       },
     },
-  },
-  preview: {
-    port,
-    host: "0.0.0.0",
-    allowedHosts: true,
-  },
+    preview: {
+      port,
+      host: "0.0.0.0",
+      allowedHosts: true,
+    },
+  }
 });
