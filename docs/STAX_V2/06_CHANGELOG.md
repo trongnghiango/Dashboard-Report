@@ -1,5 +1,24 @@
 # STAX V2 System Changelog
 
+### [2026-05-16] - Frontend Auth Token Security Upgrade
+
+- **Module:** `production-dashboard`, `api-client-react`
+- **Thay đổi:**
+  - `stores/auth.ts`: Thêm `accessToken` vào Zustand state. Token chỉ sống trong memory, không lưu localStorage (chống XSS).
+  - `hooks/api/useAuth.ts`: Xóa `localStorage.setItem("auth_token", ...)`. Dùng flag `is_logged_in` thay thế. Gọi `setAuthTokenGetter()` để `customFetch` tự gắn Bearer token.
+  - `custom-fetch.ts`: Thêm auto-refresh interceptor — khi nhận 401, tự gọi `POST /api/auth/refresh` (dùng HttpOnly Cookie) rồi retry request gốc.
+
+### [2026-05-16] - Backend AT/RT Authentication System
+
+- **Module:** `api-server`, `lib/db`, `lib/api-zod`
+- **Thay đổi:**
+  - `auth.ts` (schema): Thêm bảng `refresh_tokens`, hỗ trợ tối đa 5 phiên đồng thời với FIFO eviction.
+  - `auth.contract.ts`: Đổi `token` → `accessToken`, thêm `refreshResponseSchema`.
+  - `DrizzleRefreshToken.repository.ts`: Repository mới với Token Rotation và giới hạn 5 thiết bị.
+  - `Auth.service.ts`: Thêm `login()`, `refresh()` (Token Rotation), `logout()`.
+  - `Auth.controller.ts`: Login set HttpOnly Cookie, route `POST /refresh`, `POST /logout`.
+  - `app.ts`: Đăng ký `cookie-parser` middleware.
+
 ### [2026-05-14] - Executive Dashboard: Cảnh báo Rủi ro Đơn hàng (Order Risk Forecast) & Thanh Điều hướng Thời gian (Period Toolbar)
 
 - **Module:** `api-server`, `api-spec`, `production-dashboard`
