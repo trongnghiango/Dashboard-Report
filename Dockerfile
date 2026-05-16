@@ -8,20 +8,15 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy các file cấu hình workspace
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-# Copy tất cả các package.json của các workspace để cache layer install
-COPY artifacts/api-server/package.json ./artifacts/api-server/
-COPY lib/api-zod/package.json ./lib/api-zod/
-COPY lib/db/package.json ./lib/db/
-
-# Cài đặt dependencies (chỉ cài những gì cần để build)
-RUN pnpm install --frozen-lockfile
-
-# Copy toàn bộ mã nguồn
+# Copy toàn bộ mã nguồn dự án (đã được lọc qua .dockerignore)
+# .dockerignore sẽ giúp loại bỏ node_modules cục bộ để không làm nặng quá trình build
 COPY . .
 
-# Build Backend bằng script tối ưu mà chúng ta đã tạo
+# Cài đặt dependencies cho toàn bộ workspace
+# Chúng ta dùng --frozen-lockfile để đảm bảo tính nhất quán với pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile
+
+# Build Backend
 WORKDIR /app/artifacts/api-server
 RUN pnpm run build:prod
 
