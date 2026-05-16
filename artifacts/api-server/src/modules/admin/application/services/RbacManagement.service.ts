@@ -4,6 +4,8 @@ import {
   resourcesTable,
   permissionsTable,
   rolePermissionsTable,
+  usersTable,
+  userRolesTable,
 } from "@workspace/db";
 import { eq, and, inArray } from "drizzle-orm";
 import {
@@ -11,9 +13,18 @@ import {
   RoleResponse,
   ResourceResponse,
   RolePermissionsMatrix,
+  PermissionGroup,
+  RoleTemplate,
+  RoleMember,
 } from "@workspace/api-zod";
+import { IPermissionGroupRepository } from "../../domain/repositories/IPermissionGroupRepository";
+import { IRoleTemplateRepository } from "../../domain/repositories/IRoleTemplateRepository";
 
 export class RbacManagementService {
+  constructor(
+    private readonly groupRepo: IPermissionGroupRepository,
+    private readonly templateRepo: IRoleTemplateRepository,
+  ) {}
   async getResources(): Promise<ResourceResponse[]> {
     return db.select().from(resourcesTable).orderBy(resourcesTable.name);
   }
@@ -93,6 +104,83 @@ export class RbacManagementService {
             .values({ roleId, permissionId: perm.id })
             .onConflictDoNothing();
         }
+      }
+    });
+  }
+
+  // ─── Advanced RBAC: Groups ──────────────────────────────────────────────────
+
+  async getGroups(): Promise<PermissionGroup[]> {
+    const groups = await this.groupRepo.findAll();
+    return groups.map(g => ({
+      id: g.id!,
+      name: g.name,
+      description: g.description ?? null,
+      items: g.items.map(i => ({
+        action: i.action,
+        resourceCode: i.resourceCode!
+      }))
+    }));
+  }
+
+  // ─── Advanced RBAC: Templates ───────────────────────────────────────────────
+
+  async getTemplates(): Promise<RoleTemplate[]> {
+    const templates = await this.templateRepo.findAll();
+    return templates.map(t => ({
+      id: t.id!,
+      name: t.name,
+      description: t.description ?? null,
+      groupIds: t.groupIds,
+      extraPermissions: t.extraPermissions.map(i => ({
+        action: i.action,
+        resourceCode: i.resourceCode!
+      }))
+    }));
+  }
+
+  async getTemplateDetail(id: number): Promise<RoleTemplate> {
+    const template = await this.templateRepo.findById(id);
+    if (!template) throw new Error(`Template ${id} không tồn tại`);
+    return {
+      id: template.id!,
+      name: template.name,
+      description: template.description ?? null,
+      groupIds: template.groupIds,
+      extraPermissions: template.extraPermissions.map(i => ({
+        action: i.action,
+        resourceCode: i.resourceCode!
+      }))
+    };
+  }
+
+  // ─── Advanced RBAC: Members ────────────────────────────────────────────────
+
+  async getRoleMembers(roleId: number): Promise<RoleMember[]> {
+    return db
+      .select({
+        userId: usersTable.id,
+        username: usersTable.username,
+        fullName: usersTable.fullName,
+      })
+      .from(userRolesTable)
+      .innerJoin(usersTable, eq(userRolesTable.userId, usersTable.id))
+      .where(eq(userRolesTable.roleId, roleId));
+  }
+
+  async updateRoleMembers(roleId: number, userIds: string[]): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Xóa các user cũ
+      await tx.delete(userRolesTable).where(eq(userRolesTable.roleId, roleId));
+
+      // Thêm các user mới
+      if (userIds.length > 0) {
+        await tx.insert(userRolesTable).values(
+          userIds.map(userId => ({
+            roleId,
+            userId
+          }))
+        );
       }
     });
   }
